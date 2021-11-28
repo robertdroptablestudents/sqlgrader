@@ -1,0 +1,8 @@
+POST http://localhost:5000/grading/100 HTTP/1.1
+Content-Type: application/json
+
+{
+    "student_id": "100",
+    "assignment_id": "1",
+    "score": "100"
+}

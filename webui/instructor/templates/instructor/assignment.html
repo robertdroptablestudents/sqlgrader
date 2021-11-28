@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+
+{% block title %}Assignment {{ assignment.assignment_name }}{% endblock %}
+{% block tabname %}assignments{% endblock %}
+{% block breadcrumbs %}
+    <li class="breadcrumb-item"><a href="{% url 'instructor:assignmentlist' %}">Assignments</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ assignment.assignment_name}}</li>
+{% endblock %}
+
+{% block content %}
+
+<!-- show general assignment info -->
+<div class="row">
+    <div class="col-md-12">
+        <h2><i class="fas fa-book"></i> {{ assignment.assignment_name}}</h2>
+    </div>
+</div>
+<!-- form for editing assignment info -->
+<div class="row">
+    <div class="col-md-6">
+        Some helpful text here, and a link to docs.
+    </div>
+    <div class="col-md-6 pb-3">
+        <div class="card"><div class="card-body">
+        <h5 class="card-title">Edit assignment</h5>
+        <form action="{% url 'instructor:assignmentedit' %}" method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <input type="hidden" name="assignment_id" value="{{ assignment.id }}">
+                <div class="row">
+                    <div class="col mb-3">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" id="assignment_name" name="assignment_name"
+                                value="{{ assignment.assignment_name }}">
+                            <label for="assignment_name">Assignment Name</label>
+                        </div>
+                    </div>
+                    <div class="col mb-3">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="is_active" name="is_active"
+                            {% if assignment.is_active %} checked {% endif %} value="1">
+                            <label for="is_active">Assignment Active?</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-3 float-end">
+                    <button type="submit" class="btn btn-success" value="Update assignment">
+                        Update Assignment <i class="fas fa-save"></i>
+                    </button>
+                </div>
+            </div>
+            <!-- <div class="form-floating">
+                <textarea class="form-control" id="assignment_description" name="assignment_description" rows="3">{{ assignment.assignment_description }}</textarea>
+                <label for="assignment_description">Assignment Description</label>
+            </div>
+            <div class="form-floating">
+                <label for="assignment_due_date">Due Date</label>
+                <input type="date" class="form-control" id="assignment_due_date" name="assignment_due_date" value="{{ assignment.assignment_due_date }}">
+            </div> 
+            <div class="form-floating">
+                <label for="assignment_points">Points</label>
+                <input type="number" class="form-control" id="assignment_points" name="assignment_points" value="
+                -->
+
+        </form>
+        </div></div>
+    </div>
+</div>
+
+<!-- list of assignment environments -->
+<div class="row border-top pt-3">
+    <div class="col-md-12">
+        <h3><i class="fas fa-server"></i> Environment</h3>
+    </div>
+</div>
+
+{% for assignment_environment in assignment_environments %}
+<div class="row pb-3">
+    <div class="col-md-3">
+    </div>
+    <div class="col-md-3">
+        {{ assignment_environment.db_type }}
+    </div>
+    {% if assignment_environment.initial_code %}
+    <div class="col-md-3">
+        <a href="{{ MEDIA_URL }}{{ assignment_environment.initial_code }}">{{ assignment_environment.initial_code }}</a>
+    </div>
+    <div class="col-md-3">
+        <form action="{% url 'instructor:assignmentenvironmentclear' %}" method="post" encType="multipart/form-data">
+            {% csrf_token %}
+            <input type="hidden" name="assignment_environment_id" value="{{ assignment_environment.id }}">
+            <button type="submit" class="btn btn-secondary btn-sm float-end" value="Remove initial code"><i class="fas fa-trash"></i> Remove initial code</button>
+        </form>
+    </div> 
+    {% else %}
+    <div class="col-md-6">
+        <!-- form to upload assignment_environment.initial_code file -->
+        <form action="{% url 'instructor:assignmentenvironmentedit' %}" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-group">
+                <input type="hidden" name="assignment_environment_id" value="{{ assignment_environment.id }}">
+                <div class="mb-3">
+                    <label for="initial_code">Initial Environment Code:</label>
+                    <input type="file" id="initial_code" name="initial_code" accept="*">
+                </div>
+                <div class="mb-3 float-end">
+                    <button type="submit" class="btn btn-secondary btn-sm" value="Update assignment environment">
+                        Update Assignment Environment <i class="fas fa-save"></i>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+    {% endif %}
+
+</div>
+
+{% endfor %}
+
+
+<!-- form to add assignment items -->
+<div class="row border-top pt-3 pb-3">
+    <div class="col-md-6">
+        <h2><i class="fas fa-list-ol"></i> Assignment Items</h2>
+    </div>
+    <div class="col-md-6">
+        <div class="card"><div class="card-body">
+        <h5 class="card-title">Add item</h5>
+        <form action="{% url 'instructor:assignmentitem' %}" method="post">
+            <input type="hidden" name="assignment_id" value="{{ assignment.id }}">
+            {% csrf_token %}
+            <div class="form-group">
+                <div class="row">
+                    <div class="col mb-3">
+                        <div class="form-floating">
+                            <input type="number" step="1" class="form-control" id="item_number" name="item_number" style="width:150px;">
+                            <label for="item_number">Item Number</label>
+                        </div>
+                    </div>
+                    <div class="col mb-3">
+                        <div class="form-floating">
+                            <select class="form-select" aria-label="Select an Item type" id="assignment_type" name="assignment_type" style="width:150px;">
+                                {% for assignmenttypekey, assignmenttypevalue in assignmenttypes %}
+                                <option value="{{ assignmenttypekey }}">{{ assignmenttypevalue }}</option>
+                                {% endfor %}
+                            </select>
+                            <label for="assignment_type">Item Type</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-3 float-end">
+                    <button type="submit" class="btn btn-success" value="Add assignment item">
+                        Add Assignment Item <i class="fas fa-plus-square"></i>
+                    </button>
+                </div>
+            </div>
+        </form>
+        </div></div>
+    </div>
+</div>
+
+
+<!-- list of assignment items -->
+{% if assignment_items %}
+{% for aitem in assignment_items %}
+<div class="row pt-3">
+    <div class="col-md-3">
+        <a href="/instructor/assignmentitemdetails/{{aitem.id}}"><span class="badge bg-secondary"> 
+        {{ aitem.item_number }}: {{ aitem.item_type }}
+        </span></a>
+    </div>
+    <div class="col-md-3">
+        {{ aitem.item_name }}
+    </div>
+    <div class="col-md-6">
+        {% if aitem.item_type == 'Query' %}
+        The grader will compare the output of the query defined here against the submitted query over 1 or more data sets.
+        {% else %}
+        The grader will compare the submitted schema to the assignment environment plus any additional code defined here.
+        {% endif %}
+    </div>
+</div>
+{% endfor %}
+{% else %}
+<div class="row pt-3">
+    <div class="col-md-12">
+        <p>No items entered.</p>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

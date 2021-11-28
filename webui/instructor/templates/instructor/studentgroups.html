@@ -1,0 +1,31 @@
+
+
+{% extends "base.html" %}
+
+{% block title %}Student Groups{% endblock %}
+
+{% block content %}
+
+<!-- a form to create a new studentgroup -->
+<form action="{% url 'instructor:studentgroup' %}" method="post">
+    {% csrf_token %}
+    <div class="form-group">
+        <label for="group_name">Group Name</label>
+        <input type="text" class="form-control" id="group_name" name="group_name" placeholder="Enter group name">
+    </div>
+    <input type="submit" class="btn btn-primary" value="Create Group">
+</form>
+
+<!-- list of groups -->
+{% if active_groups %}
+    <ul>
+    {% for studentgroup in active_groups  %}
+        <li><i class="fas fa-camera"></i> <a href="instructor/studentgroup/{{ studentgroup.id }}/">{{ studentgroup.group_name }}</a></li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No students entered.</p>
+{% endif %}
+
+
+{% endblock %}

@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Grading{% endblock %}
+{% block tabname %}grading{% endblock %}
+{% block breadcrumbs %}
+    <li class="breadcrumb-item active" aria-current="page">Grading</li>
+{% endblock %}
+
+{% block content %}
+<!-- form to create new grading process -->
+<div class="row">
+    <div class="col-md-6">
+        <h2>Create Grading Process</h2>
+    </div>
+    <div class="col-md-6">
+        <form action="{% url 'instructor:gradingprocess' %}" method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <div class="row">
+                    <div class="col mb-3">
+                        <div class="form-floating">
+                            <select class="form-select" aria-label="Assignment" id="default_assignment" name="default_assignment"
+                                style="width:250px;">
+                                {% for assg in assignments_tograde %}
+                                <option value="{{ assg.id }}">{{ assg.assignment_name }}</option>
+                                {% endfor %}
+                            </select>
+                            <label for="default_assignment">Assignment</label>
+                        </div>
+                    </div>
+                    <div class="mb-3 float-end">
+                    <button type="submit" class="btn btn-success" value="Create grading process">
+                        Add Grading Process <i class="fas fa-plus-square"></i>
+                    </button>
+                </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<!-- view of active grading processes -->
+<div class="row border-top pt-3">
+    <div class="col-md-6">
+        <h2>Active Grading Processes</h2>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+    {% if full_grading_list %}
+    <ul>
+    {% for gradingprocess in full_grading_list %}
+        <li><i class="fas fa-clipboard-check"></i> <a href="/instructor/grading/{{ gradingprocess.id }}">{{ gradingprocess.assignment.assignment_name }}: {{ gradingprocess.process_status }}</a></li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p>No grading processes available.</p>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Grading {{ grading_process.assignment.assignment_name }}{% endblock %}
+{% block tabname %}grading{% endblock %}
+{% block breadcrumbs %}
+    <li class="breadcrumb-item"><a href="{% url 'instructor:gradingoverview' %}">Grading</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ grading_process.assignment.assignment_name }}: {{ grading_process.process_status }}</li>
+{% endblock %}
+
+{% block content %}
+
+<!-- show general assignment info -->
+<div class="row">
+    <div class="col-md-6">
+        <h2><i class="fas fa-clipboard-check"></i>Grading {{ grading_process.assignment.assignment_name }}</h2>
+        <p>Current Status: {{ grading_process.process_status }}</p>
+        <h5>Grading Log:</h5>
+        {% if grading_process.process_log %}
+            <pre>{{ grading_process.process_log }}</pre>
+        {% endif %}
+    </div>
+    <div class="col-md-6">
+        <form action="{% url 'instructor:gradingstart' %}" method="post">
+            <input type="hidden" name="grading_process_id" value="{{ grading_process.id }}">
+            {% csrf_token %}
+            <div class="form-group">
+                <div class="row">
+                    <div class="mb-3 float-end">
+                    <button type="submit" class="btn btn-success" value="Start Grading">
+                        Start Grading <i class="fas fa-hourglass-start"></i>
+                    </button>
+                </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- display timeline -->
+<div class="row">
+
+</div>
+
+<!-- add items to grade, show items to grade -->
+<div class="row border-top pt-3">
+    <div class="col-md-6">
+        <h3>Items to grade</h3>
+        {% if grading_assignments %}
+        <ul>
+            {% for assignmentitem in grading_assignments %}
+            <li> {{ assignmentitem.assignment_item.item_number }}.
+                <a href="{% url 'instructor:assignmentitemdetails' assignmentitem.assignment_item.id %}">{{ assignmentitem.assignment_item.item_name }} ({{ assignmentitem.assignment_item.item_type }})</a>
+            </li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+    </div>
+    <div class="col-md-6">
+        <form action="{% url 'instructor:gradingitem' %}" method="post">
+            <input type="hidden" name="grading_process_id" value="{{ grading_process.id }}">
+            {% csrf_token %}
+            <div class="form-group">
+                <div class="row">
+                    <div class="col mb-3">
+                        <div class="form-floating">
+                            <select class="form-select" aria-label="Assignment item" id="assignment_item" name="assignment_item"
+                                style="width:250px;">
+                                {% for assignmentitem in assignment_items %}
+                                <option value="{{ assignmentitem.id }}">{{ assignmentitem.item_name }} ({{ assignmentitem.item_type }})</option>
+                                {% endfor %}
+                            </select>
+                            <label for="assignment_item">Assignment Item</label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                    <button type="submit" class="btn btn-success float-end" value="Add assignment item">
+                        Add Assignment Item <i class="fas fa-plus-square"></i>
+                    </button>
+                </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+
+{% endblock %}

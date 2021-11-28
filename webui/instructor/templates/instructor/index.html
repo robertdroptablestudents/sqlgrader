@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}SQLGrader{% endblock %}
+{% block tabname %}home{% endblock %}
+
+{% block content %}
+
+<div class="row g-4 py-5 row-cols-1 row-cols-lg-3">
+    <div class="feature col">
+        <div class="feature-icon bg-secondary bg-gradient">
+            <i class="fas fa-users"></i>
+        </div>
+        <h2>Students</h2>
+        <p>This is where students are managed. Probably link to documentation, too.</p>
+        <a href="/instructor/students" class="icon-link">
+            Go to Students
+            <svg class="bi" width="1em" height="1em">
+                <i class="bi fas fa-chevron-right"></i>
+            </svg>
+        </a>
+    </div>
+    <div class="feature col">
+        <div class="feature-icon bg-secondary bg-gradient">
+            <i class="fas fa-book"></i>
+        </div>
+        <h2>Assignments</h2>
+        <p>This is where assignments are managed.  Probably link to documentation, too.</p>
+        <a href="/instructor/assignments" class="icon-link">
+            Go to Assignments
+            <svg class="bi" width="1em" height="1em">
+                <i class="bi fas fa-chevron-right"></i>
+            </svg>
+        </a>
+    </div>
+    <div class="feature col">
+        <div class="feature-icon bg-secondary bg-gradient">
+            <i class="fas fa-clipboard-check"></i>
+        </div>
+        <h2>Grading</h2>
+        <p>Paragraph of text beneath the heading to explain the heading. We'll add onto it with another sentence and
+            probably just keep going until we run out of words.</p>
+        <a href="/instructor/grading" class="icon-link">
+            Go to Grading
+            <svg class="bi" width="1em" height="1em">
+                <i class="bi fas fa-chevron-right"></i>
+            </svg>
+        </a>
+    </div>
+</div>
+
+{% endblock %}

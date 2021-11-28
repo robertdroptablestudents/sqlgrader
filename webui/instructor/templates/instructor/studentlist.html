@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}Students{% endblock %}
+{% block tabname %}students{% endblock %}
+{% block breadcrumbs %}
+    <li class="breadcrumb-item active" aria-current="page">Students</li>
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-6">
+        <!-- studentgroups -->
+
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Add a student group</h5>
+                <!-- a form to create a new studentgroup -->
+                <form action="{% url 'instructor:studentgroup' %}" method="post">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <div class="row">
+                            <div class="col-md-9 mb-3"><div class="form-floating">
+                                <input type="text" class="form-control" id="group_name" name="group_name" placeholder="Enter group name">
+                                <label for="group_name">Group Name</label>
+                            </div></div>
+                            <div class="col pt-4">
+                                <button type="submit" class="btn btn-success btn-sm float-end" value="Create Group">Create group <i class="fas fa-plus-square"></i></button>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- list of groups -->
+        <div class="mt-4">
+        <h5>Student groups</h5>
+        {% if active_groups %}
+            <ul>
+            {% for studentgroup in active_groups  %}
+                <li><i class="fas fa-camera"></i> <a href="instructor/studentgroup/{{ studentgroup.id }}/">{{ studentgroup.group_name }}</a></li>
+            {% endfor %}
+            </ul>
+        {% else %}
+            <p>No student groups found.</p>
+        {% endif %}
+        </div>
+
+        </div>
+
+        <div class="col-md-6">
+        <!-- students -->
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Add a student</h5>
+                <!-- form to add a new student -->
+                <!-- fields first_name, last_name, student_custom_id, student_group_id -->
+                <form action="{% url 'instructor:newstudent' %}" method="post">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <div class="row">
+                            <div class="col mb-3"><div class="form-floating">
+                                <input type="text" class="form-control" id="first_name" name="first_name" placeholder="Enter first name">
+                                <label for="first_name">First Name</label>
+                            </div></div>
+                            <div class="col mb-3"><div class="form-floating">
+                                <input type="text" class="form-control" id="last_name" name="last_name" placeholder="Enter last name">
+                                <label for="last_name">Last Name</label>
+                            </div></div>
+                        </div>
+                        <div class="row">
+                            <div class="col"><div class="form-floating">
+                                <input type="text" class="form-control" id="student_custom_id" name="student_custom_id" placeholder="Enter Custom ID">
+                                <label for="student_custom_id">Custom ID</label>
+                            </div></div>
+                            <div class="col"><div class="form-floating">
+                                <select class="form-control" aria-label="Student Group" id="student_group_id" name="student_group_id">
+                                    <option value="">Select a group</option>
+                                    {% for studentgroup in groups_for_newstudent  %}
+                                        <option value="{{ studentgroup.id }}">{{ studentgroup.group_name }}</option>
+                                    {% endfor %}
+                                </select>
+                                <label for="student_group_id">Group</label>
+                            </div></div>
+                        </div>
+                        <div class="row">
+                            <div class="col pt-4 float-end">
+                                <button type="submit" class="btn btn-success float-end" value="Add Student">Add student <i class="fas fa-plus-square"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                
+            </div>
+        </div>
+
+        <div class="mt-4">
+        <h5>Students</h5>
+        {% if full_student_list %}
+            <ul>
+            {% for student in full_student_list  %}
+                <li><i class="fas fa-id-badge"></i> <a href="/student/{{ student.id }}/">{{ student.first_name }}</a></li>
+            {% endfor %}
+            </ul>
+        {% else %}
+            <p>No students entered.</p>
+        {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}

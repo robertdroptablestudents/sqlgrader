@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block title %}Assignment Item {{ assignment_item.item_name}}{% endblock %}
+{% block tabname %}assignments{% endblock %}
+{% block breadcrumbs %}
+    <li class="breadcrumb-item"><a href="{% url 'instructor:assignmentlist' %}">Assignments</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'instructor:assignment' %}/{{ assignment_item.assignment.id}}">{{ assignment_item.assignment.assignment_name}}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Item {{ assignment_item.item_name}}</li>
+{% endblock %}
+
+{% block content %}
+
+<!-- show general assignment info -->
+<div class="row">
+    <div class="col-md-6">
+        <h2><i class="fas fa-list-ol"></i> {{ assignment_item.assignment.assignment_name}} Item: {{ assignment_item.item_name}}</h2>
+        {% if assignment_item.item_type == 'QUERY' and assignment_item.item_solution %}
+            Correct query: <a href="{{ MEDIA_URL }}{{ assignment_item.item_solution }}">{{ assignment_item.item_solution }}</a>
+        {% endif %}
+    </div>
+<!-- form for editing assignment info -->
+    <div class="col-md-6 pb-3">
+        <div class="card"><div class="card-body">
+        <h5 class="card-title">Edit assignment item</h5>
+        <form action="{% url 'instructor:assignmentitemedit' %}" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-group">
+                <input type="hidden" name="assignment_item_id" value="{{ assignment_item.id }}">
+                <div class="row">
+                    <div class="col mb-3">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" id="item_name" name="item_name"
+                                value="{{ assignment_item.item_name }}">
+                            <label for="item_name">Item Name</label>
+                        </div>
+                    </div>
+                    <div class="mb-3" {% if assignment_item.item_type != 'QUERY' %}style="display:none;"{% endif %}>
+                        <label for="item_code">Correct Query:</label>
+                        <input type="file" id="item_code" name="item_code" accept="*" >
+                    </div>
+                    <div class="mb-3 float-end">
+                        <button type="submit" class="btn btn-secondary btn-sm float-end" value="Update assignment environment">
+                            Update Assignment Item <i class="fas fa-save"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+        </div></div>
+    </div>
+</div>
+
+<!-- list of testing instances -->
+<div class="row border-top pt-3">
+    <div class="col-md-6">
+        <h3><i class="fas fa-server"></i> Environment Instances</h3>
+
+        {% if environment_instance %}
+        <div class="accordion" id="environmentinstances">
+            {% for env_instance in environment_instance %}
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingEI{{ env_instance.id }}"><button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#EI{{ env_instance.id }}" aria-expanded="true" aria-controls="EI{{ env_instance.id }}">
+                    Instance: {{ env_instance.environment_name }}
+                </button></h2>
+
+                <div id="EI{{ env_instance.id }}" class="accordion-collapse collapse show" aria-labelledby="headingEI{{ env_instance.id }}" data-bs-parent="#environmentinstances">
+                    <div class="accordion-body">
+                        {% if env_instance.initial_code %}
+                        <div class="row"><div class="col mb-6 pb-4">
+                            Current specific setup script: <a href="{{ MEDIA_URL }}{{ env_instance.initial_code }}">{{ env_instance.initial_code }}</a>
+                        </div></div>
+                        {% endif %}
+                        <form action="{% url 'instructor:environmentinstanceedit' %}" method="post" enctype="multipart/form-data">
+                            <input type="hidden" name="environment_instance_id" value="{{ env_instance.id }}">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <div class="row">
+                                    <div class="col mb-3">
+                                        <div class="form-floating">
+                                            <input type="text" class="form-control" id="environment_name" name="environment_name" style="width:250px;" value="{{ env_instance.environment_name }}">
+                                            <label for="environment_name">Environment Name</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col mb-3">
+                                        <label for="initial_code">Item-specific environment setup:</label>
+                                        <input type="file" id="initial_code" name="initial_code" accept="*">
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="mb-3">
+                                        <button type="submit" class="btn btn-secondary btn-sm float-end" value="Update environment">
+                                            Update environment <i class="fas fa-save"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p>No environment instances for grading this item found.</p>
+        {% endif %}
+
+
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+        <div class="card-body">
+        <h5 class="card-title">Add environment for item grading</h5>
+        <form action="{% url 'instructor:environmentinstance' %}" method="post" enctype="multipart/form-data">
+            <input type="hidden" name="assignment_item_id" value="{{ assignment_item.id }}">
+            {% csrf_token %}
+            <div class="form-group">
+                <div class="row">
+                    <div class="col mb-3">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" id="environment_name" name="environment_name" style="width:250px;" >
+                            <label for="environment_name">Environment Name</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col mb-3">
+                        <label for="initial_code">Item-specific environment setup:</label>
+                        <input type="file" id="initial_code" name="initial_code" accept="*">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="mb-3">
+                        <button type="submit" class="btn btn-success float-end" value="Add assignment item">
+                            Add Assignment Item <i class="fas fa-plus-square"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+        </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+{% endblock %}
