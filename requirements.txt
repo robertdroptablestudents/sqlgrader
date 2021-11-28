@@ -1,0 +1,12 @@
+# django dev environment, also in sqlgrader/requirements.txt
+Django==3.2.9
+httpx
+djangorestframework
+
+
+# flask dev environment, also in api/requirements.txt
+docker
+psycopg>=3.0
+mysql-connector-python
+# pyodbc
+flask>=2.0.0

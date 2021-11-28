@@ -127,3 +127,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+
+sqlgrader/static/bootstrap-5.1.3-dist.zip
+sqlgrader/static/fontawesome-free-5.15.4-web.zip
+
+media/
