@@ -23,7 +23,7 @@ EXPOSE 5000
 RUN apt-get update && apt-get install -y libpq-dev postgresql-client
 
 # pyodbc driver steps, minimal requirements
-RUN apt-get update && apt-get install -y unixodbc-dev
+# RUN apt-get update && apt-get install -y unixodbc-dev
 
 # pip requirements
 COPY api/requirements.txt /tmp/pip-tmp/
