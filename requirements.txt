@@ -8,5 +8,5 @@ djangorestframework
 docker
 psycopg>=3.0
 mysql-connector-python
-# pyodbc
+pyodbc
 flask>=2.0.0

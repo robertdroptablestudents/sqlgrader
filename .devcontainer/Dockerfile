@@ -16,7 +16,7 @@ RUN apt-get update && apt-get install -y libpq-dev postgresql-client
 
 # pyodbc driver steps, minimal requirements
 # microsoft repo in apt sources breaks this
-# RUN apt-get update && apt-get install -y unixodbc-dev
+RUN apt-get update && apt-get install -y unixodbc-dev
 
 # [Optional] If your pip requirements rarely change, uncomment this section to add them to the image.
 COPY requirements.txt /tmp/pip-tmp/
