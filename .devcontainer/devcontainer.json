@@ -1,26 +1,23 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
-// https://github.com/microsoft/vscode-dev-containers/tree/v0.202.3/containers/python-3
+// https://github.com/microsoft/vscode-dev-containers/tree/v0.205.2/containers/python-3
 {
 	"name": "Python 3",
-	"runArgs": ["--init"],
+	"runArgs": ["--init", "--privileged"],
+	"overrideCommand": false,
 	"build": {
 		"dockerfile": "Dockerfile",
 		"context": "..",
 		"args": { 
-			// Update 'VARIANT' to pick a Python version: 3, 3.9, 3.8, 3.7, 3.6.
+			// Update 'VARIANT' to pick a Python version: 3, 3.10, 3.9, 3.8, 3.7, 3.6
 			// Append -bullseye or -buster to pin to an OS version.
 			// Use -bullseye variants on local on arm64/Apple Silicon.
-			"VARIANT": "3.10-bullseye",
-			"TARGETARCH": "amd64",  // arm64, amd64
-			// Options
-			"NODE_VERSION": "none"
+			"VARIANT": "3.10-bullseye"
 		}
 	},
 
 	// Set *default* container specific settings.json values on container create.
 	"settings": { 
-		"python.pythonPath": "/usr/local/bin/python",
-		"python.languageServer": "Pylance",
+		"python.defaultInterpreterPath": "/usr/local/bin/python",
 		"python.linting.enabled": false,
 		"python.linting.pylintEnabled": false,
 		"python.formatting.autopep8Path": "/usr/local/py-utils/bin/autopep8",
@@ -39,18 +36,16 @@
 		"ms-python.python",
 		"ms-python.vscode-pylance",
 		"github.copilot",
-		"oderwat.indent-rainbow"
+		"oderwat.indent-rainbow",
+		"ms-azuretools.vscode-docker"
 	],
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	"forwardPorts": [8000],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	// "postCreateCommand": "bash .devcontainer/django-init.sh",
+	// "postCreateCommand": "pip3 install --user -r requirements.txt",
 
 	// Comment out connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
-	"remoteUser": "vscode",
-	"features": {
-		"docker-in-docker": "latest"
-	}
+	// "remoteUser": "vscode",
 }
