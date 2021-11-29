@@ -1,0 +1,40 @@
+name: container publish
+
+on:
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+  # push:
+  #   branches:
+  #     - master
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+    - name: checkout code
+      uses: actions/checkout@v2
+
+    - name: Get Date for Tag
+      id: date
+      run: echo "::set-output name=date::$(date +%Y-%m-%d-T%H-%M)"
+
+    - name: setup qemu
+      uses: docker/setup-qemu-action@v1
+    - name: setup buildx
+      uses: docker/setup-buildx-action@v1
+    - name: login to ghcr
+      uses: docker/login-action@v1
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: $${{ secrets.GITHUB_TOKEN }}
+        
+    - name: build and push
+      uses: docker/build-and-push-action@v2
+      with:
+        context: .
+        platforms: linux/amd64,linux/arm64
+        push: true
+        tags: robertdroptablestudents/sqlpackage:latest,robertdroptablestudents/sqlgrader:${{steps.date.outputs.date}}
+        build-args:
+          - BUILDID=${{steps.date.outputs.date}}
