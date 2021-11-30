@@ -35,6 +35,6 @@ jobs:
         context: .
         platforms: linux/amd64,linux/arm64
         push: true
-        tags: ghcr.io/robertdroptablestudents/sqlpackage:latest,ghcr.io/robertdroptablestudents/sqlgrader:${{steps.date.outputs.date}}
+        tags: ghcr.io/robertdroptablestudents/sqlgrader:latest,ghcr.io/robertdroptablestudents/sqlgrader:${{steps.date.outputs.date}}
         build-args: |
           BUILDID=${{steps.date.outputs.date}}
