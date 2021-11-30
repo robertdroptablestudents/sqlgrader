@@ -3,6 +3,7 @@
 ARG VARIANT="3.10-bullseye"
 
 FROM --platform=linux/arm64 python:${VARIANT} as arm64
+RUN apt-get update && apt-get install -y unixodbc-dev
 
 FROM --platform=linux/amd64 python:${VARIANT} as amd64
 RUN apt-get update && apt-get install -y unixodbc unixodbc-dev
@@ -21,9 +22,6 @@ EXPOSE 5000
 
 # postgres driver steps
 RUN apt-get update && apt-get install -y libpq-dev postgresql-client
-
-# pyodbc driver steps, minimal requirements
-# RUN apt-get update && apt-get install -y unixodbc-dev
 
 # pip requirements
 COPY api/requirements.txt /tmp/pip-tmp/

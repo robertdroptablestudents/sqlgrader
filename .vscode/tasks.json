@@ -7,15 +7,33 @@
             "label": "Django: Run Server",
             "type": "shell",
             "command": "${config:python.pythonPath}",
-            "args":[ 
-                   "webui/manage.py",
-                   "runserver"
-             ],
+            "args": [
+                "webui/manage.py",
+                "runserver"
+            ],
             "group": "none",
             "presentation": {
                 "reveal": "always",
                 "panel": "new"
-               }
-           }
+            }
+        },
+        {
+            "label": "Build SQLGrader Container",
+            "type": "shell",
+            "command": "docker",
+            "args": [
+                "build",
+                "--build-arg",
+                "BUILDID=localbuild",
+                "-t",
+                "sqlgrader",
+                "."
+            ],
+            "group":"build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            }
+        }
     ]
 }
