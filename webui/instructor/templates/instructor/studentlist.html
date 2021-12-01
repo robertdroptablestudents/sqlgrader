@@ -41,7 +41,7 @@
         {% if active_groups %}
             <ul>
             {% for studentgroup in active_groups  %}
-                <li><i class="fas fa-camera"></i> <a href="instructor/studentgroup/{{ studentgroup.id }}/">{{ studentgroup.group_name }}</a></li>
+                <li><i class="fas fa-users"></i> <a href="studentgroup/{{ studentgroup.id }}">{{ studentgroup.group_name }}</a></li>
             {% endfor %}
             </ul>
         {% else %}

@@ -1,5 +1,4 @@
 from django.shortcuts import render
-# from django.template import loader
 from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.urls import reverse
 
@@ -43,13 +42,14 @@ def newstudent(request):
         raise Http404("error creating student")
     return HttpResponseRedirect(reverse('instructor:studentlist'))
 
-def studentgroup(request, group_id):
+def studentgroupdetails(request, studentgroup_id):
     try:
-        group = StudentGroup.objects.get(pk=group_id)
+        group = StudentGroup.objects.get(pk=studentgroup_id)
+        students = Student.objects.filter(student_group=group)
     except StudentGroup.DoesNotExist:
         raise Http404("group does not exist")
 
-    return HttpResponse("instructor view studentgroup for group %s" % group_id)
+    return render(request, 'instructor/studentgroupdetails.html', {'group': group, 'students': students})
 
 def studentgroup(request):
     try:
@@ -59,4 +59,15 @@ def studentgroup(request):
         raise Http404("error creating group")
     return HttpResponseRedirect(reverse('instructor:studentlist'))
 
-
+def studentgroupedit(request):
+    try:
+        group = StudentGroup.objects.get(pk=request.POST['studentgroup_id'])
+        group.group_name = request.POST['group_name']
+        if 'is_active' in request.POST:
+            group.is_active = True
+        else:
+            group.is_active = False
+        group.save()
+    except:
+        raise Http404("error editing group")
+    return HttpResponseRedirect(reverse('instructor:studentgroupdetails', args=(group.id,)))

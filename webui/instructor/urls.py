@@ -8,8 +8,9 @@ urlpatterns = [
 
     path('students', views.studentlist, name='studentlist'),
     path('studentgroup', views.studentgroup, name='studentgroup'),
-    path('studentgroup/<int:studentgroup_id>', views.studentgroup, name='studentgroupdetails'),
+    path('studentgroup/<int:studentgroup_id>', views.studentgroupdetails, name='studentgroupdetails'),
     path('newstudent', views.newstudent, name='newstudent'),
+    path('studentgroupedit', views.studentgroupedit, name='studentgroupedit'),
 
     path('assignments', views.assignmentlist, name='assignmentlist'),
     path('assignment', views.assignment, name='assignment'),
@@ -34,8 +35,11 @@ urlpatterns = [
 
     # api endpoints
     path('api_updategradingstatus', views.update_gradingstatus.as_view(), name='api_updategradingstatus'),
-    # path('api_createcontainer', views.create_container.as_view(), name='api_createcontainer'),
     path('api_getenvironmentinstances/<int:assignmentitem_id>', views.get_environmentinstances.as_view(), name='api_getenvironmentinstances'),
     path('api_getstudentsubmissions/<int:assignmentitem_id>', views.get_studentsubmissions.as_view(), name='api_getstudentsubmissions'),
     path('api_updatestudentsubmissionitem', views.update_studentsubmissionitem.as_view(), name='api_updatestudentsubmissionitem'),
+
+
+    # bulk import actions
+    path('studentimport', views.import_students_togroup, name='studentimport'),
 ] 
