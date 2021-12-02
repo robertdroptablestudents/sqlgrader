@@ -9,8 +9,10 @@ urlpatterns = [
     path('students', views.studentlist, name='studentlist'),
     path('studentgroup', views.studentgroup, name='studentgroup'),
     path('studentgroup/<int:studentgroup_id>', views.studentgroupdetails, name='studentgroupdetails'),
+    path('student/<int:student_id>', views.studentdetails, name='studentdetails'),
     path('newstudent', views.newstudent, name='newstudent'),
     path('studentgroupedit', views.studentgroupedit, name='studentgroupedit'),
+    path('studentedit', views.studentedit, name='studentedit'),
 
     path('assignments', views.assignmentlist, name='assignmentlist'),
     path('assignment', views.assignment, name='assignment'),

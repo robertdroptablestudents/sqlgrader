@@ -43,6 +43,8 @@ ENV DEFAULTPASSWORD="P@ssw0rd"
 # flask app environment
 ENV FLASK_APP=main.py
 
+# django superuser password
+ENV DJANGO_SUPERUSER_PASSWORD="abc123"
 # django allowed host
 ENV THISURL="localhost"
 

@@ -23,9 +23,11 @@ def studentdetails(request, student_id):
     try:
         student = Student.objects.get(pk=student_id)
         student_submissions = StudentSubmission.objects.filter(student=student)
+        student_group_options = StudentGroup.objects.filter(is_active=True).values()
         context = {
             'student': student,
             'student_submissions': student_submissions,
+            'student_group_options': student_group_options,
         }
     except Student.DoesNotExist:
         raise Http404("student does not exist")
@@ -41,6 +43,22 @@ def newstudent(request):
         print(e)
         raise Http404("error creating student")
     return HttpResponseRedirect(reverse('instructor:studentlist'))
+
+def studentedit(request):
+    try:
+        student = Student.objects.get(pk=request.POST['student_id'])
+        student.first_name = request.POST['first_name']
+        student.last_name = request.POST['last_name']
+        student.student_custom_id = request.POST['student_custom_id']
+        student.student_group = StudentGroup.objects.get(pk=request.POST['student_group_id'])
+        if 'is_active' in request.POST:
+            student.is_active = True
+        else:
+            student.is_active = False
+        student.save()
+    except:
+        raise Http404("error editing student")
+    return HttpResponseRedirect(reverse('instructor:studentdetails', args=(student.id,)))
 
 def studentgroupdetails(request, studentgroup_id):
     try:

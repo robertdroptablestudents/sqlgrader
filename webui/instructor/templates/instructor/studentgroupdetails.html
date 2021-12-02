@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 
 {% block title %}Student Group {{ group.group_name }}{% endblock %}
-{% block tabname %}assignments{% endblock %}
+{% block tabname %}students{% endblock %}
 {% block breadcrumbs %}
     <li class="breadcrumb-item"><a href="{% url 'instructor:studentlist' %}">Students</a></li>
-    <li class="breadcrumb-item active" aria-current="page">{{ group.group_name }}</li>
+    <li class="breadcrumb-item active" aria-current="page">Group: {{ group.group_name }}</li>
 {% endblock %}
 
 {% block content %}
@@ -47,44 +47,36 @@
             </div>
         </form>
         </div></div>
+        <!-- upload a student list -->
+        <div class="card mt-3"><div class="card-body">
+            <h5 class="card-title">Upload a student list</h5>
+            <p>Student list import creates new students from a CSV with columns firstname, lastname, and custom ID.</p>
+            <form action="{% url 'instructor:studentimport' %}" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="form-group">
+                    <input type="hidden" name="group_id" value="{{ group.id }}">
+                    <div class="mb-3">
+                        <label for="csvfile">Student List:</label>
+                        <input type="file" id="csvfile" name="csvfile" accept=".csv">
+                    </div>
+                    <div class="mb-3 float-end">
+                        <button type="submit" class="btn btn-secondary btn-sm" value="Upload New Students">
+                            Upload New Students <i class="fas fa-save"></i>
+                        </button>
+                    </div>
+                </div>
+            </form>
+            </div></div>
     </div>
 
-
-
-<!-- upload a student list -->
-
-    <div class="col-md-6">
-        <div class="card"><div class="card-body">
-        <h5 class="card-title">Upload a student list</h5>
-        <p>Student list import creates new students from a CSV with columns firstname, lastname, and custom ID.</p>
-        <form action="{% url 'instructor:studentimport' %}" method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-            <div class="form-group">
-                <input type="hidden" name="group_id" value="{{ group.id }}">
-                <div class="mb-3">
-                    <label for="csvfile">Student List:</label>
-                    <input type="file" id="csvfile" name="csvfile" accept=".csv">
-                </div>
-                <div class="mb-3 float-end">
-                    <button type="submit" class="btn btn-secondary btn-sm" value="Upload New Students">
-                        Upload New Students <i class="fas fa-save"></i>
-                    </button>
-                </div>
-            </div>
-        </form>
-        </div></div>
-    </div>
-
-</div>
 
 <!-- student list from group -->
-<div class="row">
-    <div class="col-md-6 mt-3">
+    <div class="col-md-6">
         <h5>Students in Group {{ group.group_name }}</h5>
         {% if students %}
         <ul>
             {% for student in students %}
-            <li class="list-group-item"><i class="fas fa-id-badge"></i> <a href="/student/{{ student.id }}/">{{ student.first_name }} {{ student.last_name }} ({{student.student_custom_id}})</a></li>
+            <li class="list-group-item"><i class="fas fa-id-badge"></i> <a href="{% url 'instructor:studentdetails' student_id=student.id %}">{{ student.first_name }} {{ student.last_name }} ({{student.student_custom_id}})</a></li>
             {% endfor %}
         </ul>
         {% endif %}
