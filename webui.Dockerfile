@@ -13,6 +13,8 @@ RUN pip3 --disable-pip-version-check --no-cache-dir install -r /tmp/pip-tmp/requ
 
 # django interface secret key
 ENV secretkey="0xb8xKH!%TR!0Wv5zJA4#gMURq&HehOpxybf"
+# django superuser password
+ENV DJANGO_SUPERUSER_PASSWORD="abc123"
 # django allowed host
 ENV THISURL="localhost"
 # app build number for webui

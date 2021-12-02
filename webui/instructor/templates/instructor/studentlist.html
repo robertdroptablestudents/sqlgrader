@@ -41,7 +41,7 @@
         {% if active_groups %}
             <ul>
             {% for studentgroup in active_groups  %}
-                <li><i class="fas fa-camera"></i> <a href="instructor/studentgroup/{{ studentgroup.id }}/">{{ studentgroup.group_name }}</a></li>
+                <li><i class="fas fa-users"></i> <a href="studentgroup/{{ studentgroup.id }}">{{ studentgroup.group_name }}</a></li>
             {% endfor %}
             </ul>
         {% else %}
@@ -102,7 +102,7 @@
         {% if full_student_list %}
             <ul>
             {% for student in full_student_list  %}
-                <li><i class="fas fa-id-badge"></i> <a href="/student/{{ student.id }}/">{{ student.first_name }}</a></li>
+                <li><i class="fas fa-id-badge"></i> <a href="{% url 'instructor:studentdetails' student_id=student.id %}">{{ student.first_name }}</a></li>
             {% endfor %}
             </ul>
         {% else %}

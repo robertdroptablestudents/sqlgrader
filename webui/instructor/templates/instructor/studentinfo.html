@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}Student {{ student.first_name }} {{ student.last_name }}{% endblock %}
+{% block tabname %}students{% endblock %}
+{% block breadcrumbs %}
+    <li class="breadcrumb-item"><a href="{% url 'instructor:studentlist' %}">Students</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Student: {{ student.first_name }} {{ student.last_name }}</li>
+{% endblock %}
+
+{% block content %}
+
+<div class="row">
+    <div class="col-md-12">
+        <h2><i class="fas fa-id-badge"></i> {{ student.first_name }} {{ student.last_name }} ({{ student.student_custom_id }})</h2>
+    </div>
+</div>
+<!-- general student group info (name) -->
+<div class="row">
+    <div class="col-md-6 pb-3">
+        <div class="card"><div class="card-body">
+        <h5 class="card-title">Edit student</h5>
+        <form action="{% url 'instructor:studentedit' %}" method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <input type="hidden" name="student_id" value="{{ student.id }}">
+                <div class="row">
+                    <div class="col mb-3">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" id="first_name" name="first_name"
+                                value="{{ student.first_name }}">
+                            <label for="first_name">First Name</label>
+                        </div>
+                    </div>
+                    <div class="col mb-3">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" id="last_name" name="last_name"
+                                value="{{ student.last_name }}">
+                            <label for="last_name">Last Name</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col mb-3">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" id="student_custom_id" name="student_custom_id"
+                                value="{{ student.student_custom_id }}">
+                            <label for="student_custom_id">Custom ID</label>
+                        </div>
+                    </div>
+                    <div class="col mb-3"><div class="form-floating">
+                        <select class="form-control" aria-label="Student Group" id="student_group_id" name="student_group_id">
+                            <option value="">Select a group</option>
+                            {% for studentgroup in student_group_options  %}
+                                <option value="{{ studentgroup.id }}"
+                                    {% if studentgroup.id == student.student_group_id %} selected {% endif %}
+                                    {{ studentgroup.name }}
+                                >{{ studentgroup.group_name }}</option>
+                            {% endfor %}
+                        </select>
+                        <label for="student_group_id">Group</label>
+                    </div></div>
+                </div>
+                <div class="row">
+                    <div class="mb-3">
+                        <button type="submit" class="btn btn-success btn-sm float-end" value="Update student">
+                            Update Student Info <i class="fas fa-save"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+        </div></div>
+    </div>
+
+
+
+<!-- list of student submissions -->
+
+    <div class="col-md-6">
+        <h5>Students Submissions</h5>
+        {% if student_submissions %}
+        <ul>
+            {% for submission in student_submissions %}
+            <li class="list-group-item"><i class="fas fa-book"></i> {{ submission.assignment.assignment_name }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+    </div>
+
+</div>
+
+
+
+{% endblock %}

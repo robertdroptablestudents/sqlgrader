@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}Student Group {{ group.group_name }}{% endblock %}
+{% block tabname %}students{% endblock %}
+{% block breadcrumbs %}
+    <li class="breadcrumb-item"><a href="{% url 'instructor:studentlist' %}">Students</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Group: {{ group.group_name }}</li>
+{% endblock %}
+
+{% block content %}
+
+<div class="row">
+    <div class="col-md-12">
+        <h2><i class="fas fa-users"></i> {{ group.group_name }}</h2>
+    </div>
+</div>
+<!-- general student group info (name) -->
+<div class="row">
+    <div class="col-md-6 pb-3">
+        <div class="card"><div class="card-body">
+        <h5 class="card-title">Edit group</h5>
+        <form action="{% url 'instructor:studentgroupedit' %}" method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <input type="hidden" name="studentgroup_id" value="{{ group.id }}">
+                <div class="row">
+                    <div class="col mb-3">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" id="group_name" name="group_name"
+                                value="{{ group.group_name }}">
+                            <label for="group_name">Group Name</label>
+                        </div>
+                    </div>
+                    <div class="col mb-3">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="is_active" name="is_active"
+                            {% if group.is_active %} checked {% endif %} value="1">
+                            <label for="is_active">Group Active?</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-3 float-end">
+                    <button type="submit" class="btn btn-success btn-sm" value="Update group">
+                        Update Group Info <i class="fas fa-save"></i>
+                    </button>
+                </div>
+            </div>
+        </form>
+        </div></div>
+        <!-- upload a student list -->
+        <div class="card mt-3"><div class="card-body">
+            <h5 class="card-title">Upload a student list</h5>
+            <p>Student list import creates new students from a CSV with columns firstname, lastname, and custom ID.</p>
+            <form action="{% url 'instructor:studentimport' %}" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="form-group">
+                    <input type="hidden" name="group_id" value="{{ group.id }}">
+                    <div class="mb-3">
+                        <label for="csvfile">Student List:</label>
+                        <input type="file" id="csvfile" name="csvfile" accept=".csv">
+                    </div>
+                    <div class="mb-3 float-end">
+                        <button type="submit" class="btn btn-secondary btn-sm" value="Upload New Students">
+                            Upload New Students <i class="fas fa-save"></i>
+                        </button>
+                    </div>
+                </div>
+            </form>
+            </div></div>
+    </div>
+
+
+<!-- student list from group -->
+    <div class="col-md-6">
+        <h5>Students in Group {{ group.group_name }}</h5>
+        {% if students %}
+        <ul>
+            {% for student in students %}
+            <li class="list-group-item"><i class="fas fa-id-badge"></i> <a href="{% url 'instructor:studentdetails' student_id=student.id %}">{{ student.first_name }} {{ student.last_name }} ({{student.student_custom_id}})</a></li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+    </div>
+</div>
+
+
+{% endblock %}
