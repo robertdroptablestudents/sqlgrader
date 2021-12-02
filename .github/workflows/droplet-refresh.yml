@@ -2,9 +2,6 @@ name: droplet refresh
 
 on:
   workflow_dispatch:
-  
-  registry_package:
-    types: [updated]
 
 jobs:
   droplet:
@@ -21,4 +18,4 @@ jobs:
           docker container stop sqlgrader
           docker container rm sqlgrader
           docker pull ghcr.io/robertdroptablestudents/sqlgrader:latest
-          docker run -p 80:80 --name sqlgrader --privileged -e THISURL=sqlgrader.drewsk.tech -d ghcr.io/robertdroptablestudents/sqlgrader:latest
+          docker run -p 80:80 --name sqlgrader --privileged -e THISURL=sqlgrader.drewsk.tech -e DJANGO_SUPERUSER_PASSWORD=${{ secrets.DROPLET_PASS }} -d ghcr.io/robertdroptablestudents/sqlgrader:latest

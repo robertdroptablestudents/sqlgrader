@@ -1,5 +1,4 @@
 from django.shortcuts import render
-# from django.template import loader
 from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.urls import reverse
 
@@ -24,9 +23,11 @@ def studentdetails(request, student_id):
     try:
         student = Student.objects.get(pk=student_id)
         student_submissions = StudentSubmission.objects.filter(student=student)
+        student_group_options = StudentGroup.objects.filter(is_active=True).values()
         context = {
             'student': student,
             'student_submissions': student_submissions,
+            'student_group_options': student_group_options,
         }
     except Student.DoesNotExist:
         raise Http404("student does not exist")
@@ -43,13 +44,30 @@ def newstudent(request):
         raise Http404("error creating student")
     return HttpResponseRedirect(reverse('instructor:studentlist'))
 
-def studentgroup(request, group_id):
+def studentedit(request):
     try:
-        group = StudentGroup.objects.get(pk=group_id)
+        student = Student.objects.get(pk=request.POST['student_id'])
+        student.first_name = request.POST['first_name']
+        student.last_name = request.POST['last_name']
+        student.student_custom_id = request.POST['student_custom_id']
+        student.student_group = StudentGroup.objects.get(pk=request.POST['student_group_id'])
+        if 'is_active' in request.POST:
+            student.is_active = True
+        else:
+            student.is_active = False
+        student.save()
+    except:
+        raise Http404("error editing student")
+    return HttpResponseRedirect(reverse('instructor:studentdetails', args=(student.id,)))
+
+def studentgroupdetails(request, studentgroup_id):
+    try:
+        group = StudentGroup.objects.get(pk=studentgroup_id)
+        students = Student.objects.filter(student_group=group)
     except StudentGroup.DoesNotExist:
         raise Http404("group does not exist")
 
-    return HttpResponse("instructor view studentgroup for group %s" % group_id)
+    return render(request, 'instructor/studentgroupdetails.html', {'group': group, 'students': students})
 
 def studentgroup(request):
     try:
@@ -59,4 +77,15 @@ def studentgroup(request):
         raise Http404("error creating group")
     return HttpResponseRedirect(reverse('instructor:studentlist'))
 
-
+def studentgroupedit(request):
+    try:
+        group = StudentGroup.objects.get(pk=request.POST['studentgroup_id'])
+        group.group_name = request.POST['group_name']
+        if 'is_active' in request.POST:
+            group.is_active = True
+        else:
+            group.is_active = False
+        group.save()
+    except:
+        raise Http404("error editing group")
+    return HttpResponseRedirect(reverse('instructor:studentgroupdetails', args=(group.id,)))
