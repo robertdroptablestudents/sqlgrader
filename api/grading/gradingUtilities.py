@@ -53,9 +53,11 @@ def queryTupleComparison(admin_results, student_results):
     return { 'length_difference': length_difference, 'rows_mismatched': rows_mismatched, 'rows_outoforder': rows_outoforder, 'rows_missing': rows_missing, 'extra_rows': extra_rows, 'points_possible': points_possible, 'points_earned': points_earned, 'specific_feedback': specific_feedback }
 
 def schemaObjectComparison(admin_objects, student_objects):
+    length_difference = 0
     rows_mismatched = 0
     rows_missing = []
     extra_rows = []
+    specific_feedback = ""
     primary_score = 0
     secondary_score = 0
     full_schema = {
@@ -69,10 +71,30 @@ def schemaObjectComparison(admin_objects, student_objects):
         }
     }
 
+    # sanitize the schema objects
+    for i in range(0, len(admin_objects)):
+        # set 1st, 2nd, and 4th columns to lowercase
+        admin_objects[i][0] = admin_objects[i][0].lower() # schema name
+        admin_objects[i][1] = admin_objects[i][1].lower() # table name
+        admin_objects[i][3] = admin_objects[i][3].lower() # column name
+    for i in range(0, len(student_objects)):
+        # set 1st, 2nd, and 4th columns to lowercase
+        student_objects[i][0] = student_objects[i][0].lower()
+        student_objects[i][1] = student_objects[i][1].lower()
+        student_objects[i][3] = student_objects[i][3].lower()
+
+    # compare the number of schema objects
+    if len(admin_objects) != len(student_objects):
+        length_difference = abs(len(admin_objects) - len(student_objects))
+        specific_feedback = "The number of schema objects differs from the expected number of schema objects by " + length_difference + " schema object(s)."
+    else:
+        specific_feedback = "The number of schema objects matches the expected number of schema objects."
+
+
 
     # full_schema['admin_schema']['tables'] = admin_results
     # full_schema['grading_schema']['tables'] = student_results
-
+ 
     # for admin_row in admin_results:
     #     if admin_row not in student_results:
     #         rows_mismatched += 1
@@ -121,5 +143,6 @@ def schemaObjectComparison(admin_objects, student_objects):
         'primary_score': primary_score,
         'secondary_score': secondary_score,
         'rows_missing': rows_missing,
-        'extra_rows': extra_rows
+        'extra_rows': extra_rows,
+        'specific_feedback': specific_feedback
     }
