@@ -8,7 +8,7 @@ on:
       - main
 
 jobs:
-  docker:
+  droplet:
     runs-on: ubuntu-latest
     steps:
     - name: checkout code
@@ -39,9 +39,6 @@ jobs:
         build-args: |
           BUILDID=preview-${{steps.date.outputs.date}}
 
-  droplet:
-    runs-on: ubuntu-latest
-    steps:
     - name: refresh container on droplet
       uses: appleboy/ssh-action@v0.1.4
       with:
@@ -52,5 +49,5 @@ jobs:
         script: |
           docker container stop sqlgrader
           docker container rm sqlgrader
-          docker pull ghcr.io/robertdroptablestudents/sqlgrader:latest
+          docker pull ghcr.io/robertdroptablestudents/sqlgrader:preview-${{steps.date.outputs.date}}
           docker run -p 80:80 --name sqlgrader --privileged -e THISURL=sqlgrader.drewsk.tech -e DJANGO_SUPERUSER_PASSWORD=${{ secrets.DROPLET_PASS }} -d ghcr.io/robertdroptablestudents/sqlgrader:preview-${{steps.date.outputs.date}}
