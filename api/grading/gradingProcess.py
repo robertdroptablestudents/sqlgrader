@@ -1,6 +1,4 @@
-import time
 import requests
-import os
 
 from ..dbManagement import controlplane, dataplane, dbUtilities
 

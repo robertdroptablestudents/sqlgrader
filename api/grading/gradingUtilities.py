@@ -1,4 +1,3 @@
-
 def queryTupleComparison(admin_results, student_results):
     length_difference = 0
     rows_mismatched = 0

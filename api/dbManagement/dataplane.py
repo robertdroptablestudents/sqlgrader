@@ -1,8 +1,7 @@
-import docker, os, psycopg, mysql.connector, pyodbc
-from urllib.parse import quote_plus
+import psycopg, mysql.connector, pyodbc
 
 from .dbUtilities import get_connectionstring
-from ..grading import queryTupleComparison, schemaObjectComparison
+from ..grading import gradingUtilities
 
 # universal query execution
 # does not return results
@@ -99,16 +98,26 @@ def runSQLFileReturn(db_type, container_port, sql_file):
     return results
 
 
+# get foreign key constraints
+def getForeignKeys(db_type, which_port):
+    fk_query_path = '../schemaComparison/' + db_type.lower() + 'foreignkeys.sql'
+    fk_results = runSQLFileReturn(db_type, which_port, fk_query_path)
+    return fk_results
+
+# gets table schema objects
+def getSchemaObjects(db_type, which_port):
+    schema_query_path = '../schemaComparison/' + db_type.lower() + 'schema.sql'
+    schema_objects = runSQLFileReturn(db_type, which_port, schema_query_path)
+    return schema_objects
+
+
 # compares 2 schemas and returns statistics on the differences
-# returns full schemas as an object
 def compareSchemas(db_type, admin_port, grading_port):
     return_content = {}
-    schema_query_path = '../schemaComparison/' + db_type.lower() + 'schema.sql'
+    admin_results = getSchemaObjects(db_type, admin_port)
+    student_results = getSchemaObjects(db_type, grading_port)
 
-    admin_results = runSQLFileReturn(db_type, admin_port, schema_query_path)
-    student_results = runSQLFileReturn(db_type, grading_port, schema_query_path)
-
-    return_content = schemaObjectComparison(admin_results, student_results)
+    return_content = gradingUtilities.schemaObjectComparison(admin_results, student_results)
 
     # return object
     #  {
@@ -129,7 +138,7 @@ def compareQuery(db_type, admin_port, grading_port, adminsql, studentsql):
     admin_results = runSQLFileReturn(db_type, admin_port, adminsql)
     student_results = runSQLFileReturn(db_type, grading_port, studentsql)
     
-    return_content = queryTupleComparison(admin_results, student_results)
+    return_content = gradingUtilities.queryTupleComparison(admin_results, student_results)
 
     # return object
     # { 'length_difference': length_difference, 'rows_mismatched': rows_mismatched, 'rows_outoforder': rows_outoforder, 'rows_missing': rows_missing, 'extra_rows': extra_rows, 'points_possible': points_possible, 'points_earned': points_earned, 'specific_feedback': specific_feedback }
