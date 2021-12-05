@@ -2,7 +2,7 @@ select tables.table_schema, tables.table_name, tables.table_type,
     columns.column_name, columns.is_nullable,
     columns.column_default, columns.data_type,
     coalesce(try_cast(columns.character_maximum_length as varchar(5)), try_cast(columns.numeric_precision as varchar(5))+','+try_cast(columns.numeric_scale as varchar(5))) as type_size
-    ,  case COLUMNPROPERTY(object_id(tables.TABLE_SCHEMA+'.'+tables.TABLE_NAME), COLUMN_NAME, 'IsIdentity') when 1 then 'YES' ELSE 'NO' END as is_identity
+    , case when columns.EXTRA  = 'auto_increment' then 'YES' ELSE 'NO' END as is_identity
     , CASE (select count(1) from information_schema.table_constraints tc
         left join information_schema.constraint_column_usage ccu on tc.constraint_name = ccu.constraint_name
         where tc.constraint_type in ('unique', 'primary key') and 

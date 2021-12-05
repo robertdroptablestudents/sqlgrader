@@ -4,3 +4,4 @@ pyodbc
 
 flask>=2.0.0
 docker
+faker
