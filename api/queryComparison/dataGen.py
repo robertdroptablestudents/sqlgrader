@@ -72,7 +72,7 @@ def fakerData(column_type, isUnique, data_size):
         return ''
 
 def dataStoragePath(assignment_env_id):
-    return '/code/webui/media/assignmentenv_{0}/'.format(assignment_env_id)
+    return '/code/webui/media/assignmentenv_{0}/datagen/'.format(assignment_env_id)
 
 # generate data for this table based on data types only
 def basicDataGen(assignment_env_id, tableName, all_columns, file_number):
@@ -82,7 +82,7 @@ def basicDataGen(assignment_env_id, tableName, all_columns, file_number):
         if row[0]+'-'+row[1] == tableName and row[8] == 'NO':
             table_columns.append(row)
 
-    # open a new csv file
+    # open a new csv file filenumber-schema-tablename.csv
     csv_file_name = str(file_number)+'-'+tableName+'.csv'
     sql_file_name = str(file_number)+'-'+tableName+'.sql'
     # 'assignmentenv_{0}/{1}'.format(self.id, filename)

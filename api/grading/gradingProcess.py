@@ -139,6 +139,12 @@ def rungradingprocess(**kwargs):
                 more_code = environment_instance['initial_code']
                 dataplane.runSQLfile(db_type, ADMIN_PORT, more_code)
 
+                # check for generated data
+                if environment_instance['generated_data'] is not None and environment_instance['generated_data'] == True:
+                    dataplane.loadData(environment_instance['id'], db_type, ADMIN_PORT)
+
+                # TODO create an image from the admin container
+
                 # for each student submission, run grading process
                 for student_submission in student_submissions:
                     print(student_submission)

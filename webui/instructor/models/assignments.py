@@ -15,7 +15,6 @@ class AssignmentEnvironment(models.Model):
     def get_file_path(self, filename):
         return 'assignmentenv_{0}/{1}'.format(self.id, filename)
     initial_code = models.FileField(upload_to=get_file_path, blank=True, null=True)
-    has_datagen = models.BooleanField(default=False)
 
 class AssignmentItem(models.Model):
     ASSIGNMENT_TYPES = [('QUERY','Query'), ('SCHEMA','Schema')]
@@ -35,6 +34,7 @@ class EnvironmentInstance(models.Model):
     def get_file_path(self, filename):
         return 'itemenv_{0}/{1}'.format(self.id, filename)
     initial_code = models.FileField(upload_to=get_file_path, blank=True, null=True)
+    has_datagen = models.BooleanField(default=False)
 
 
 # TODO this item is not yet used, could be used for more robust dataset creation

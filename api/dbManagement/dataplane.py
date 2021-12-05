@@ -1,26 +1,20 @@
-import psycopg, mysql.connector, pyodbc
+import psycopg, mysql.connector, pyodbc, os
 
 from .dbUtilities import get_connectionstring
 from ..grading import gradingUtilities
+from ..queryComparison import dataGen
 
 # universal query execution
 # does not return results
-def runSQLfile(db_type, container_port, sql_file):
-    """
-    Runs the SQL file on the grading container.
-    :param grading_container: The grading container to run the SQL file on.
-    :param sql_file: The SQL file to run.
-    :return: no return
-    """
-
-    # Get the SQL file
+def runSQLcommand(db_type, container_port, sql_command):
+# Get the SQL file
     # Run the SQL
     match db_type.lower():
         case 'postgres':
             try:
                 conn = psycopg.connect(get_connectionstring(db_type, container_port, False), autocommit=True)
                 with conn.cursor() as cur:
-                    cur.execute(open(sql_file,"r").read())
+                    cur.execute(sql_command)
                     conn.commit()
                 conn.close()
             except (Exception, psycopg.DatabaseError) as error:
@@ -31,7 +25,7 @@ def runSQLfile(db_type, container_port, sql_file):
             try:
                 conn = mysql.connector.connect(**get_connectionstring(db_type, container_port, False))
                 with conn.cursor() as cur:
-                    cur.execute(open(sql_file,"r").read())
+                    cur.execute(sql_command)
                 conn.close()
             except Exception as e:
                 print('Error creating database')
@@ -41,11 +35,17 @@ def runSQLfile(db_type, container_port, sql_file):
             try:
                 conn = pyodbc.connect(get_connectionstring(db_type, container_port, False))
                 with conn.cursor() as cur:
-                    cur.execute(open(sql_file,"r").read())
+                    cur.execute(sql_command)
                 conn.close()
             except Exception as e:
                 print('Error creating database')
                 print(e)
+
+
+# query execution wrapper for file input
+def runSQLfile(db_type, container_port, sql_file):
+    runSQLcommand(db_type, container_port, open(sql_file,"r").read())
+
 
 # universal query execution
 # returns results
@@ -96,6 +96,19 @@ def runSQLFileReturn(db_type, container_port, sql_file):
                 print(e)
 
     return results
+
+# pull int prepending the file name
+def fileOrder(filename):
+    return int(filename.split('-')[0])
+
+# iterate over insert statements and run them
+def loadData(assignment_environment_id, db_type, container_port):
+    file_path = dataGen.dataStoragePath(assignment_environment_id)
+    file_list = os.listdir(file_path)
+    file_list.sort(key=fileOrder)
+    # execute the files in order
+    for insert_file in file_list:
+        runSQLfile(db_type, container_port, file_path + insert_file)
 
 
 # get foreign key constraints
