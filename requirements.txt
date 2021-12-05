@@ -10,3 +10,4 @@ psycopg>=3.0
 mysql-connector-python
 pyodbc
 flask>=2.0.0
+faker

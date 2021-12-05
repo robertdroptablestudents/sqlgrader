@@ -1,6 +1,7 @@
 from flask import Flask, request
 import threading
 from .grading import gradingProcess
+from .queryComparison import dataGen
 
 app = Flask(__name__)
 
@@ -19,3 +20,15 @@ def grading(grading_process_id):
     grading_thread.start()
 
     return "Grading process started", 200
+
+# route for query data generation
+@app.route("/datagen/<int:assignment_item_id>", methods=["POST"])
+def datagen(assignment_item_id):
+    data = request.get_json()
+    apikey = request.headers.get("apikey")
+
+    # do datagen
+    datagen_thread = threading.Thread(target=dataGen.startdatagen, kwargs={"assignment_item_id": assignment_item_id, "apikey": apikey, "post_body": data})
+    datagen_thread.start()
+
+    return "Data gen started", 200
