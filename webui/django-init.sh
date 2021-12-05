@@ -1,3 +1,19 @@
+if [ -d "static/bootstrap" ]
+then
+  echo "Bootstrap files already installed"
+else
+    unzip static/bootstrap.zip -d static
+    mv static/bootstrap-5.1.3-dist static/bootstrap
+fi
+
+if [ -d "static/fa" ]
+then
+  echo "Font-awesome files already installed"
+else
+    unzip static/fa.zip -d static
+    mv static/fontawesome-free-5.15.4-web static/fa
+fi
+
 python manage.py makemigrations instructor
 python manage.py migrate
 

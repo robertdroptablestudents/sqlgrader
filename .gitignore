@@ -129,7 +129,8 @@ dmypy.json
 .pyre/
 
 
-sqlgrader/static/bootstrap-5.1.3-dist.zip
-sqlgrader/static/fontawesome-free-5.15.4-web.zip
+# bootstrap and font awesome files
+webui/static/bootstrap/*
+webui/static/fa/*
 
 media/
