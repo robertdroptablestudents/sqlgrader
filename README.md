@@ -1,37 +1,34 @@
-# sqlgrader
+# SQLGrader
+
+Providing automated grading and test environment management for relational databases ([Postgres](https://www.postgresql.org/), [MSSQL](https://www.microsoft.com/sql-server/), and [MySQL](https://www.mysql.com/)). Uses Python ([Django](https://www.djangoproject.com/), [Flask](https://flask.palletsprojects.com/)) and [Docker-in-Docker](https://docs.docker.com/) to provide a GUI on top of coordination of grading environments according to your schema specifications.
+
+![GitHub](https://img.shields.io/github/license/robertdroptablestudents/sqlgrader?style=flat-square)
+
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/robertdroptablestudents/sqlgrader/droplet%20refresh?style=flat-square) => main branch deployed live at [http://sqlgrader.drewsk.tech/](http://sqlgrader.drewsk.tech/)
 
 
-## Start webUI server manually
 
-```
-cd sqlgrader
-python manage.py
+## Quick Start
 
-```
+SQLGrader is available as a container image for ARM64 and AMD64 architectures. Pull the image and run to give SQLGrader a spin:
 
-**VS Code tasks are setup, hit F5 to start the web UI server.**
-
-
-## Reset local dev environment
-
-1. Clear all app migrations
-```
-cd webui/instructor/migrations
-rm -r *
+```bash
+docker pull ghcr.io/robertdroptablestudents/sqlgrader:latest
+docker run -p 80:80 --name sqlgrader --privileged -d ghcr.io/robertdroptablestudents/sqlgrader:latest
 ```
 
-2. Delete database - remove db.sqlite3 from webui/sqlite folder
+*Note: the webUI may take a few minutes to build and run after starting the container*
 
-3. Run initial migration and re-add super user
-```
-cd webui
-python manage.py migrate
-DJANGO_SUPERUSER_USERNAME=admin DJANGO_SUPERUSER_PASSWORD=abc123 DJANGO_SUPERUSER_EMAIL=robert@droptablestudents.com python manage.py createsuperuser --noinput
-python manage.py drf_create_token admin
-```
+## Documentation
 
-4. Run app migrations
-```
-python manage.py makemigrations instructor
-python manage.py migrate
-```
+Project documentation is available at [https://robertdroptablestudents.github.io/](https://robertdroptablestudents.github.io/)
+
+![Architecture overview](https://robertdroptablestudents.github.io/assets/diagrams/arch.png)
+
+
+
+## Contributing
+
+Contributions are welcome!
+1. This project has a [Code of Conduct](code_of_conduct.md)
+2. Documentation on development for SQLGrader is available at [https://robertdroptablestudents.github.io/docs/development](https://robertdroptablestudents.github.io/docs/development)

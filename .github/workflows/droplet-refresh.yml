@@ -35,7 +35,7 @@ jobs:
         context: .
         platforms: linux/amd64
         push: true
-        tags: ghcr.io/robertdroptablestudents/sqlgrader:preview-${{steps.date.outputs.date}}
+        tags: ghcr.io/robertdroptablestudents/sqlgrader:preview-${{steps.date.outputs.date}},ghcr.io/robertdroptablestudents/sqlgrader:preview-latest
         build-args: |
           BUILDID=preview-${{steps.date.outputs.date}}
 
@@ -49,5 +49,5 @@ jobs:
         script: |
           docker container stop sqlgrader
           docker container rm sqlgrader
-          docker pull ghcr.io/robertdroptablestudents/sqlgrader:preview-${{steps.date.outputs.date}}
-          docker run -p 80:80 --name sqlgrader --privileged -e THISURL=sqlgrader.drewsk.tech -e DJANGO_SUPERUSER_PASSWORD=${{ secrets.DROPLET_PASS }} -d ghcr.io/robertdroptablestudents/sqlgrader:preview-${{steps.date.outputs.date}}
+          docker pull ghcr.io/robertdroptablestudents/sqlgrader:preview-latest
+          docker run -p 80:80 --name sqlgrader --privileged -e THISURL=sqlgrader.drewsk.tech -e DJANGO_SUPERUSER_PASSWORD=${{ secrets.DROPLET_PASS }} -d ghcr.io/robertdroptablestudents/sqlgrader:preview-latest
