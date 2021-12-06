@@ -1,0 +1,23 @@
+name: droplet auto refresh
+
+on:
+  schedule:
+    # once a day at midnight
+    - cron: 0 0 * * *
+
+jobs:
+  droplet:
+    runs-on: ubuntu-latest
+    steps:
+    - name: refresh container on droplet
+      uses: appleboy/ssh-action@v0.1.4
+      with:
+        host: ${{ secrets.DROPLET_IP }}
+        username: ${{ secrets.DROPLET_USER }}
+        password: ${{ secrets.DROPLET_PASS }}
+        port: 22
+        script: |
+          docker container stop sqlgrader
+          docker container rm sqlgrader
+          docker pull ghcr.io/robertdroptablestudents/sqlgrader:preview-latest
+          docker run -p 80:80 --name sqlgrader --privileged -e THISURL=sqlgrader.drewsk.tech -e DJANGO_SUPERUSER_PASSWORD=${{ secrets.DROPLET_PASS }} -d ghcr.io/robertdroptablestudents/sqlgrader:preview-latest
