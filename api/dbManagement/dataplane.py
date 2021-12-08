@@ -2,7 +2,6 @@ import psycopg, mysql.connector, pyodbc, os
 
 from .dbUtilities import get_connectionstring
 from ..grading import gradingUtilities
-from ..queryComparison import dataGen
 
 # universal query execution
 # does not return results
@@ -96,20 +95,6 @@ def runSQLFileReturn(db_type, container_port, sql_file):
                 print(e)
 
     return results
-
-# pull int prepending the file name
-def fileOrder(filename):
-    return int(filename.split('-')[0])
-
-# iterate over insert statements and run them
-def loadData(assignment_environment_id, db_type, container_port):
-    file_path = dataGen.dataStoragePath(assignment_environment_id)
-    file_list = os.listdir(file_path)
-    file_list.sort(key=fileOrder)
-    # execute the files in order
-    for insert_file in file_list:
-        runSQLfile(db_type, container_port, file_path + insert_file)
-
 
 # get foreign key constraints
 def getForeignKeys(db_type, which_port):

@@ -59,6 +59,34 @@ def createDB(dbType, dbPort, containerName):
 
     return new_database
 
+# create a DB container from an image previously captured
+def createClonedDB(dbImageName, dbType, dbPort, containerName):
+    container_name = 'sqlgrader-'+ containerName
+    client = docker.from_env()
+
+    # check for previous container and remove
+    existing_containers = client.containers.list(filters={'name': containerName})
+    for container in existing_containers:
+        container.stop()
+        container.remove()
+
+    # create container
+    new_database = client.containers.create(dbImageName, detach=True, labels={"sqlgrader": containerName }, name=container_name, environment=databaseOptions['environment'][dbType], ports={databaseOptions['ports'][dbType]: dbPort})
+
+    # Start container
+    new_database.start()
+    print('Started new container {}'.format(new_database.id))
+
+    return new_database
+
+
+# commit a running DB to an image
+def createImage(container_id, imageName):
+    client = docker.from_env()
+    tocapture = client.containers.get(container_id)
+    tocapture.commit(repository=imageName, tag='latest')
+
+
 # remove a container by id
 def deleteDB(container_id):
     client = docker.from_env()

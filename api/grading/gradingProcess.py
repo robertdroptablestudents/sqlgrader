@@ -1,6 +1,7 @@
 import requests
 
 from ..dbManagement import controlplane, dataplane, dbUtilities
+from ..queryComparison import dataGen
 
 
 ADMIN_PORT = 1437
@@ -141,19 +142,19 @@ def rungradingprocess(**kwargs):
 
                 # check for generated data
                 if environment_instance['generated_data'] is not None and environment_instance['generated_data'] == True:
-                    dataplane.loadData(environment_instance['id'], db_type, ADMIN_PORT)
+                    dataGen.loadData(environment_instance['id'], db_type, ADMIN_PORT)
 
-                # TODO create an image from the admin container
+                # create an image from the admin container
+                image_name = 'sqlgraderimage/assignmentitem-' + str(item_number) + '-env-' + str(environment_instance['id'])
+                controlplane.createImage(admin_container.id, image_name)
 
                 # for each student submission, run grading process
                 for student_submission in student_submissions:
                     print(student_submission)
                     callUpdateGradingLog(apikey, grading_process_id, 'Grading', 'Grading ' + str(item_number) + ' for ' + str(student_submission['student_submission']['student']['student_custom_id']))
                     studentcontainerid = 'student'+str(student_submission['student_submission']['student']['id'])
-                    student_container = controlplane.createDB(db_type, SECONDARY_PORT, studentcontainerid+'-'+str(grading_process_id))
-                    controlplane.setupDB(db_type, SECONDARY_PORT)
-                    dataplane.runSQLfile(db_type, SECONDARY_PORT, initial_code_path)
-                    dataplane.runSQLfile(db_type, SECONDARY_PORT, more_code)
+                    # create student_container from image
+                    student_container = controlplane.createClonedDB(image_name, db_type, SECONDARY_PORT, studentcontainerid)
 
                     # { 'length_difference': length_difference, 'rows_mismatched': rows_mismatched, 'rows_missing': rows_missing, 'extra_rows': extra_rows }
                     studentgradeinfo = dataplane.compareQuery(db_type, ADMIN_PORT, SECONDARY_PORT, assignment_item['assignment_item']['item_solution'], student_submission['submission_file'])
