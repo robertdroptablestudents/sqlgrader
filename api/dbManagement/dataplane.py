@@ -1,20 +1,49 @@
-import psycopg, mysql.connector, pyodbc
+import psycopg, mysql.connector, pyodbc, os
 
 from .dbUtilities import get_connectionstring
 from ..grading import gradingUtilities
 
 # universal query execution
 # does not return results
-def runSQLfile(db_type, container_port, sql_file):
-    """
-    Runs the SQL file on the grading container.
-    :param grading_container: The grading container to run the SQL file on.
-    :param sql_file: The SQL file to run.
-    :return: no return
-    """
-
-    # Get the SQL file
+def runSQLcommand(db_type, container_port, sql_command):
     # Run the SQL
+    match db_type.lower():
+        case 'postgres':
+            try:
+                conn = psycopg.connect(get_connectionstring(db_type, container_port, False), autocommit=True)
+                with conn.cursor() as cur:
+                    cur.execute(sql_command)
+                    conn.commit()
+                conn.close()
+            except (Exception, psycopg.DatabaseError) as error:
+                print('Error running script')
+                print(error)
+
+        case 'mysql':
+            try:
+                conn = mysql.connector.connect(**get_connectionstring(db_type, container_port, False))
+                with conn.cursor() as cur:
+                    cur.execute(sql_command)
+                conn.close()
+            except Exception as e:
+                print('Error creating database')
+                print(e)
+
+        case 'mssql':
+            try:
+                conn = pyodbc.connect(get_connectionstring(db_type, container_port, False))
+                with conn.cursor() as cur:
+                    cur.execute(sql_command)
+                conn.close()
+            except Exception as e:
+                print('Error creating database')
+                print(e)
+
+
+# query execution wrapper for file input
+def runSQLfile(db_type, container_port, sql_file):
+    # runSQLcommand(db_type, container_port, open(sql_file,"r").read())
+    print('running sql file'+sql_file)
     match db_type.lower():
         case 'postgres':
             try:
@@ -47,6 +76,8 @@ def runSQLfile(db_type, container_port, sql_file):
                 print('Error creating database')
                 print(e)
 
+
+
 # universal query execution
 # returns results
 def runSQLFileReturn(db_type, container_port, sql_file):
@@ -58,7 +89,7 @@ def runSQLFileReturn(db_type, container_port, sql_file):
     """
 
     # Get the SQL file
-
+    print("Running SQL file: " + sql_file)
     # Run the SQL
     match db_type.lower():
         case 'postgres':
@@ -97,16 +128,16 @@ def runSQLFileReturn(db_type, container_port, sql_file):
 
     return results
 
-
 # get foreign key constraints
 def getForeignKeys(db_type, which_port):
-    fk_query_path = '../schemaComparison/' + db_type.lower() + 'foreignkeys.sql'
+    fk_query_path = 'schemaComparison/' + db_type.lower() + '/foreignkeys.sql'
     fk_results = runSQLFileReturn(db_type, which_port, fk_query_path)
     return fk_results
 
 # gets table schema objects
 def getSchemaObjects(db_type, which_port):
-    schema_query_path = '../schemaComparison/' + db_type.lower() + 'schema.sql'
+    schema_query_path = 'schemaComparison/' + db_type.lower() + '/tables.sql'
+    print('getting schema objects')
     schema_objects = runSQLFileReturn(db_type, which_port, schema_query_path)
     return schema_objects
 

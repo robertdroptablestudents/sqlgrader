@@ -1,6 +1,7 @@
-import requests
+import requests, json
 
 from ..dbManagement import controlplane, dataplane, dbUtilities
+from ..queryComparison import dataGen
 
 
 ADMIN_PORT = 1437
@@ -9,7 +10,7 @@ SECONDARY_PORT = 1438
 
 # SECTION
 # functions calling back to django instance
-APIURL = 'http://localhost:8000/instructor/'
+APIURL = 'http://localhost:80/instructor/'
 
 # update the student submission with grade and status
 def callUpdateStudentSubmissionItemQuery(apikey, student_submission_item_id, points_possible, points_earned, grading_log):
@@ -18,27 +19,29 @@ def callUpdateStudentSubmissionItemQuery(apikey, student_submission_item_id, poi
     return r.status_code
 def callUpdateStudentSubmissionItemSchema(apikey, student_submission_item_id, score_primary, score_secondary, grading_log):
     payload = {'student_submission_item_id': student_submission_item_id, 'score_primary': score_primary, 'score_secondary': score_secondary, 'grading_log': grading_log}
-    r = requests.post(APIURL + 'api_updatestudentsubmissionitem', data=payload, headers={'Authorization': 'Token ' + apikey, 'Content-Type': 'application/json'})
+    r = requests.post(APIURL + 'api_updatestudentsubmissionitem', data=json.dumps(payload), headers={'Authorization': 'Token ' + apikey, 'Content-Type': 'application/json'})
     return r.status_code
 
 # update the grading log with status and message
 def callUpdateGradingLog(apikey, grading_process_id, new_status, log_message):
     payload = {'grading_process_id': grading_process_id, 'status_message': new_status, 'log_update': log_message }
-    r = requests.post(APIURL + 'api_updategradingstatus', data=payload, headers={'Authorization': 'Token ' + apikey, 'Content-Type': 'application/json'})
+    r = requests.post(APIURL + 'api_updategradingstatus', data=json.dumps(payload), headers={'Authorization': 'Token ' + apikey, 'Content-Type': 'application/json'})
     return r.status_code
 
-# add the container object with grading_process_id, container_id, container_name, and port
-# def callCreateContainer(grading_process_id, container_id, container_name, port):
-#     payload = {'grading_process_id': grading_process_id, 'container_id': container_id, 'container_name': container_name, 'port': port}
-#     r = requests.post(APIURL + 'api_createcontainer', data=payload, headers={'Authorization': 'Token ' + apikey, 'Content-Type': 'application/json'})
-#     return r.status_code
+# update the environment instance with completed datagen
+def callUpdateEnvironmentInstance(apikey, environment_instance_id, datagen_status):
+    if datagen_status == 'completed':
+        has_datagen = True
+    else:
+        has_datagen = False
+    payload = {'environment_instance_id': environment_instance_id, 'datagen_status': datagen_status, 'has_datagen': has_datagen}
+    r = requests.post(APIURL + 'api_updateenvironmentinstance', data=json.dumps(payload), headers={'Authorization': 'Token ' + apikey, 'Content-Type': 'application/json'})
 
 # get environment instances for a query assignment item
 # sample return body
 # [{"id": 1, "environment_name": "default", "initial_code": "/media/itemenv_1/sample-data-q1.sql", "item": 1}]
 def callGetEnvironmentInstances(apikey, assignment_item_id):
     r = requests.get(APIURL + 'api_getenvironmentinstances/' + str(assignment_item_id), headers={'Authorization': 'Token ' + apikey})
-    print(r.json())
     return r.json()
 
 # get submitted student assignments
@@ -46,7 +49,6 @@ def callGetEnvironmentInstances(apikey, assignment_item_id):
 # [{"id": 1, "student_submission": {"id": 1, "student": {"id": 1, "first_name": "Henry", "last_name": "Pug", "student_custom_id": "16", "student_group": 1}, "submission_date": "2021-10-31T03:27:58.346970Z", "is_graded": false, "grade": 0, "is_active": true, "assignment": 3}, "is_active": true, "submission_file": "/media/submissions/assign3/item1/student1/student-query.sql", "assignment_item": 1}]
 def callGetStudentSubmissions(apikey, assignment_item_id):
     r = requests.get(APIURL + 'api_getstudentsubmissions/' + str(assignment_item_id), headers={'Authorization': 'Token ' + apikey})
-    print(r.json())
     return r.json()
 
 
@@ -139,15 +141,21 @@ def rungradingprocess(**kwargs):
                 more_code = environment_instance['initial_code']
                 dataplane.runSQLfile(db_type, ADMIN_PORT, more_code)
 
+                # check for generated data
+                if environment_instance['generated_data'] is not None and environment_instance['generated_data'] == True:
+                    dataGen.loadData(environment_instance['id'], db_type, ADMIN_PORT)
+
+                # create an image from the admin container
+                image_name = 'sqlgraderimage/assignmentitem-' + str(item_number) + '-env-' + str(environment_instance['id'])
+                controlplane.createImage(admin_container.id, image_name)
+
                 # for each student submission, run grading process
                 for student_submission in student_submissions:
                     print(student_submission)
                     callUpdateGradingLog(apikey, grading_process_id, 'Grading', 'Grading ' + str(item_number) + ' for ' + str(student_submission['student_submission']['student']['student_custom_id']))
                     studentcontainerid = 'student'+str(student_submission['student_submission']['student']['id'])
-                    student_container = controlplane.createDB(db_type, SECONDARY_PORT, studentcontainerid+'-'+str(grading_process_id))
-                    controlplane.setupDB(db_type, SECONDARY_PORT)
-                    dataplane.runSQLfile(db_type, SECONDARY_PORT, initial_code_path)
-                    dataplane.runSQLfile(db_type, SECONDARY_PORT, more_code)
+                    # create student_container from image
+                    student_container = controlplane.createClonedDB(image_name, db_type, SECONDARY_PORT, studentcontainerid)
 
                     # { 'length_difference': length_difference, 'rows_mismatched': rows_mismatched, 'rows_missing': rows_missing, 'extra_rows': extra_rows }
                     studentgradeinfo = dataplane.compareQuery(db_type, ADMIN_PORT, SECONDARY_PORT, assignment_item['assignment_item']['item_solution'], student_submission['submission_file'])

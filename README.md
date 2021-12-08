@@ -3,7 +3,6 @@
 Providing automated grading and test environment management for relational databases ([Postgres](https://www.postgresql.org/), [MSSQL](https://www.microsoft.com/sql-server/), and [MySQL](https://www.mysql.com/)). Uses Python ([Django](https://www.djangoproject.com/), [Flask](https://flask.palletsprojects.com/)) and [Docker-in-Docker](https://docs.docker.com/) to provide a GUI on top of coordination of grading environments according to your schema specifications.
 
 ![GitHub](https://img.shields.io/github/license/robertdroptablestudents/sqlgrader?style=flat-square)
-
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/robertdroptablestudents/sqlgrader/droplet%20refresh?style=flat-square) => main branch deployed live at [http://sqlgrader.drewsk.tech/](http://sqlgrader.drewsk.tech/)
 
 

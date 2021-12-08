@@ -57,8 +57,8 @@ def schemaObjectComparison(admin_objects, student_objects):
     rows_missing = []
     extra_rows = []
     specific_feedback = ""
-    primary_score = 0
-    secondary_score = 0
+    primary_score = 0  # tables
+    secondary_score = 0  # indexes
     full_schema = {
         'admin_schema': {
             'tables': [],
@@ -89,53 +89,32 @@ def schemaObjectComparison(admin_objects, student_objects):
     else:
         specific_feedback = "The number of schema objects matches the expected number of schema objects."
 
+    # check for objects expected that are missing
+    for admin_object in admin_objects:
+        if admin_object not in student_objects:
+            rows_mismatched += 1
+            rows_missing += [admin_object]
+            # TODO do fuzzy matching on the schema name and table name
+
+    # if everything didn't match so far, check for extra objects
+    # check for objects not expected that are present
+    if length_difference > 0 or rows_mismatched > 0:
+        for student_object in student_objects:
+            if student_object not in admin_objects:
+                rows_mismatched += 1
+                extra_rows += [student_object]
 
 
-    # full_schema['admin_schema']['tables'] = admin_results
-    # full_schema['grading_schema']['tables'] = student_results
- 
-    # for admin_row in admin_results:
-    #     if admin_row not in student_results:
-    #         rows_mismatched += 1
-    #         rows_missing += [admin_row]
-    # if len(student_results) > len(admin_results):
-    #     for student_row in student_results:
-    #         if student_row not in admin_results:
-    #             rows_mismatched += 1
-    #             extra_rows += [student_row]
-
-    # if len(admin_results) == 0:
-    #     admin_length = 1
-    # primary_score = 100 - ((rows_mismatched / admin_length) * 100)
-    # if primary_score < 0:
-    #     primary_score = 0
+    # TODO index matching
 
 
-    # # match the indexes
-    # rows_mismatched = 0
-    # cur1.execute(open(indexes_query_path,"r").read())
-    # cur2.execute(open(indexes_query_path,"r").read())
-
-    # admin_results = cur1.fetchall()
-    # student_results = cur2.fetchall()
-    # full_schema['admin_schema']['indexes'] = admin_results
-    # full_schema['grading_schema']['indexes'] = student_results
-
-    # for admin_row in admin_results:
-    #     if admin_row not in student_results:
-    #         rows_mismatched += 1
-    #         rows_missing += [admin_row]
-    # if len(student_results) > len(admin_results):
-    #     for student_row in student_results:
-    #         if student_row not in admin_results:
-    #             rows_mismatched += 1
-    #             extra_rows += [student_row]
-
-    # if len(admin_results) == 0:
-    #     admin_length = 1
-    # secondary_score = 100 - ((rows_mismatched / admin_length) * 100)
-    # if secondary_score < 0:
-    #     secondary_score = 0
+    if len(admin_objects) == 0:
+        admin_length = 1
+    else:
+        admin_length = len(admin_objects)
+    primary_score = 100 - ((rows_mismatched / admin_length) * 100)
+    if primary_score < 0:
+        primary_score = 0
 
     return {
         'full_schema': full_schema,

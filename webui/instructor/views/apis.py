@@ -82,15 +82,25 @@ class update_studentsubmissionitem(APIView):
 
         return HttpResponse(status=200)
 
-# class create_container(APIView):
-#     permission_classes = (IsAuthenticated, )
+class update_environmentinstance(APIView):
+    permission_classes = (IsAuthenticated, )
 
-#     def post(self, request):
-#         # api endpoint to create container, returns 200
-#         # body contains grading_process_id, container_id, container_name, and port
-#         grading_process_id = request.data['grading_process_id']
-#         grading_process = GradingProcess.objects.get(pk=grading_process_id)
+    def post(self, request):
+        print(request)
+        #api endpoint to update environment instance - has_datagen and datagen_status
+        try:
+            environment_instance_id = request.data['environment_instance_id']
+            environment_instance = EnvironmentInstance.objects.get(pk=environment_instance_id)
+        except EnvironmentInstance.DoesNotExist:
+            raise Http404("environment instance does not exist")
+        
+        if 'has_datagen' in request.data:
+            environment_instance.has_datagen = request.data['has_datagen']
+        # if 'has_datagen' in request.data and request.data['has_datagen'] == "False":
+        #     environment_instance.has_datagen = False
+        if 'datagen_status' in request.data and request.data['datagen_status'] != '':
+            environment_instance.datagen_status = request.data['datagen_status']
 
-#         grading_container = GradingContainer(grading_process=grading_process, container_id=request.data['container_id'], container_name=request.data['container_name'], container_port=request.data['port'])
-#         grading_container.save()
-#         return HttpResponse(status=200)
+        environment_instance.save()
+
+        return HttpResponse(status=200)

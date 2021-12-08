@@ -1,9 +1,14 @@
 from django.shortcuts import render
-# from django.template import loader
 from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.urls import reverse
+from django.conf import settings
+from django.contrib.auth.models import User
+
+import requests, os
+from rest_framework.authtoken.models import Token
 
 from ..models import Student, StudentGroup, Assignment, AssignmentEnvironment, AssignmentItem, EnvironmentInstance, DBTYPES
+from .grading import APIURL
 
 # return full assignment list view
 def assignmentlist(request):
@@ -42,6 +47,20 @@ def assignmentitemdetails(request, assignmentitem_id):
     try:
         assignment_item = AssignmentItem.objects.get(pk=assignmentitem_id)
         environment_instance = EnvironmentInstance.objects.filter(item=assignment_item)
+        # for each environment instance, check the instance folder for files
+        for instance in environment_instance:
+            datagenpath = settings.MEDIA_ROOT + '/'+ instance.get_file_path(filename='')+'datagen/'
+            # check if datagen folder exists
+            if os.path.isdir(datagenpath):
+                datagenfiles = os.listdir(settings.MEDIA_ROOT + '/'+ instance.get_file_path(filename='')+'datagen/')
+            else:
+                datagenfiles = []
+
+            if instance.initial_code:
+                instance.allfiles = [instance.initial_code.name] + datagenfiles
+            else:
+                instance.allfiles = datagenfiles
+
     except AssignmentItem.DoesNotExist:
         raise Http404("assignment item does not exist")
     context = {
@@ -136,3 +155,54 @@ def assignmentenvironmentclear(request):
     except AssignmentEnvironment.DoesNotExist:
         raise Http404("assignment environment does not exist")
     return HttpResponseRedirect(reverse('instructor:assignmentdetails', args=(assignment_environment.assignment.id,)))
+
+
+def datagenstart(request):
+    """
+    request contains environment_instance_id
+    starts datagen API
+    sends POST body with db_type, assignment_item_id, initial_code
+    """
+    environment_instance_id = request.POST['environment_instance_id']
+    assignment_item_id = request.POST['assignment_item_id']
+    initial_code = request.POST['initial_code']
+    row_count = request.POST['row_count']
+
+
+    # get assignmentenvironment
+    assignment_item = AssignmentItem.objects.get(pk=assignment_item_id)
+    assignment_environment = AssignmentEnvironment.objects.get(pk=assignment_item.assignmentenvironment.id)
+    db_type = assignment_environment.db_type
+    env_code = assignment_environment.initial_code.name
+
+    postbody = {
+        'db_type': db_type,
+        'assignment_item_id': assignment_item_id,
+        'env_code': env_code,
+        'initial_code': initial_code,
+        'row_count': row_count,
+    }
+
+    # get token to pass to API
+    adminuser = User.objects.get(username='admin')
+    token = Token.objects.get(user=adminuser.id)
+
+    # make a post request to APIURL /datagen/<grading_process_id>
+    # with grading_assignmentitem as json
+    # token.key in header
+    callURL = APIURL+'datagen/'+environment_instance_id
+    headers = {'apikey': token.key}
+    startGrading = requests.post(callURL, json=postbody, headers=headers)
+    print(postbody)
+
+    environmentinstance = EnvironmentInstance.objects.get(pk=environment_instance_id)
+    if startGrading.status_code != 200:
+        # set datagen_status to error
+        environmentinstance.datagen_status = 'error'
+    else:
+        # set datagen_status to running
+        environmentinstance.has_datagen = True
+        environmentinstance.datagen_status = 'running'
+    environmentinstance.save()
+
+    return HttpResponseRedirect(reverse('instructor:assignmentitemdetails', args=(request.POST['assignment_item_id'],)))
