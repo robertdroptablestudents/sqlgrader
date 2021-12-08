@@ -25,6 +25,7 @@ urlpatterns = [
     path('assignmentitem', views.assignmentitem, name='assignmentitem'),
     path('assignmentitemedit', views.assignmentitemedit, name='assignmentitemedit'),
     path('assignmentitemdetails/<int:assignmentitem_id>', views.assignmentitemdetails, name='assignmentitemdetails'),
+    path('environmentinstancedatagen', views.datagenstart, name='environmentinstancedatagen'),
 
     path('environmentinstance', views.environmentinstance, name='environmentinstance'),
     path('environmentinstanceedit', views.environmentinstanceedit, name='environmentinstanceedit'),
@@ -40,6 +41,7 @@ urlpatterns = [
     path('api_getenvironmentinstances/<int:assignmentitem_id>', views.get_environmentinstances.as_view(), name='api_getenvironmentinstances'),
     path('api_getstudentsubmissions/<int:assignmentitem_id>', views.get_studentsubmissions.as_view(), name='api_getstudentsubmissions'),
     path('api_updatestudentsubmissionitem', views.update_studentsubmissionitem.as_view(), name='api_updatestudentsubmissionitem'),
+    path('api_updateenvironmentinstance', views.update_environmentinstance.as_view(), name='api_updateenvironmentinstance'),
 
 
     # bulk import actions

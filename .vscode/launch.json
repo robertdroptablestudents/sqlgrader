@@ -10,7 +10,8 @@
             "request": "launch",
             "program": "${workspaceFolder}/webui/manage.py",
             "args": [
-                "runserver"
+                "runserver",
+                "0.0.0.0:80"
             ],
             "django": true
         },

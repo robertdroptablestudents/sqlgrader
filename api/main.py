@@ -22,13 +22,13 @@ def grading(grading_process_id):
     return "Grading process started", 200
 
 # route for query data generation
-@app.route("/datagen/<int:assignment_item_id>", methods=["POST"])
-def datagen(assignment_item_id):
+@app.route("/datagen/<int:environment_instance_id>", methods=["POST"])
+def datagen(environment_instance_id):
     data = request.get_json()
     apikey = request.headers.get("apikey")
 
     # do datagen
-    datagen_thread = threading.Thread(target=dataGen.startdatagen, kwargs={"assignment_item_id": assignment_item_id, "apikey": apikey, "post_body": data})
+    datagen_thread = threading.Thread(target=dataGen.startdatagen, kwargs={"environment_instance_id": environment_instance_id, "apikey": apikey, "post_body": data})
     datagen_thread.start()
 
     return "Data gen started", 200

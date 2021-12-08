@@ -35,6 +35,7 @@ class EnvironmentInstance(models.Model):
         return 'itemenv_{0}/{1}'.format(self.id, filename)
     initial_code = models.FileField(upload_to=get_file_path, blank=True, null=True)
     has_datagen = models.BooleanField(default=False)
+    datagen_status = models.CharField(max_length=100, blank=True)
 
 
 # TODO this item is not yet used, could be used for more robust dataset creation

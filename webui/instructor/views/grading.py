@@ -2,10 +2,10 @@ from configparser import Error
 from django.shortcuts import render
 from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.urls import reverse
+from django.contrib.auth.models import User
 
 import requests
 from rest_framework.authtoken.models import Token
-import os
 
 from ..models import GradingProcess, GradingAssignment, GradingContainer, Assignment, AssignmentItem, AssignmentEnvironment, StudentSubmissionItem, EnvironmentInstance
 
@@ -71,8 +71,9 @@ def gradingstart(request):
     grading_process.gradingstatusupdate('Initializing')
     grading_assignmentitem = GradingAssignmentSerializer(GradingAssignment.objects.filter(grading_process=grading_process), many=True)
 
-    # put token in an env variable
-    token = Token.objects.get(user=request.user)
+    # get token to pass to API
+    adminuser = User.objects.get(username='admin')
+    token = Token.objects.get(user=adminuser.id)
 
     # make a post request to APIURL /gradingrunprocess/<grading_process_id>
     # with grading_assignmentitem as json

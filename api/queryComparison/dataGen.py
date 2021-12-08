@@ -4,11 +4,14 @@ from ..dbManagement import controlplane, dataplane, dbUtilities
 from ..grading import gradingProcess
 import csv, os
 
-DATASET_SIZE = 200
 faker = Faker()
 
 INT_SETS = {
     'int': {
+        'min': -2147483648,
+        'max': 2147483647
+    },
+    'integer': {
         'min': -2147483648,
         'max': 2147483647
     },
@@ -27,7 +30,16 @@ INT_SETS = {
 }
 
 def dataStoragePath(assignment_env_id):
-    return '/code/webui/media/assignmentenv_{0}/datagen/'.format(assignment_env_id)
+    # return '/code/webui/media/assignmentenv_{0}/datagen/'.format(assignment_env_id)
+    # check if '../webui/media/assignmentenv_{0}/datagen/' exists
+    if not os.path.exists('../webui/media/itemenv_{0}/'.format(assignment_env_id)):
+        os.makedirs('../webui/media/itemenv_{0}/'.format(assignment_env_id))
+    if not os.path.exists('../webui/media/itemenv_{0}/datagen/'.format(assignment_env_id)):
+        os.makedirs('../webui/media/itemenv_{0}/datagen/'.format(assignment_env_id))
+    return '../webui/media/itemenv_{0}/datagen/'.format(assignment_env_id)
+
+def initialCodePath(filename):
+    return '../webui/media/' + filename
 
 # pull int prepending the file name
 def fileOrder(filename):
@@ -46,7 +58,7 @@ def loadData(assignment_environment_id, db_type, container_port):
 
 # faker utility selector
 def fakerData(column_type, isUnique, data_size):
-    if column_type in ('string', 'nvarchar', 'varchar', 'text', 'char', 'nchar'):
+    if column_type in ('string', 'nvarchar', 'varchar', 'text', 'char', 'nchar','char varying', 'nchar varying', 'character varying', 'character'):
         if data_size == '-1': # resize (max) columns
             data_size = '500'
         if isUnique == 'YES':
@@ -111,7 +123,7 @@ def pullSeedValues(assignment_env_id, source_table, source_column):
     return seed_values
 
 # generate data values for a specific column in a self-referencing table
-def createSeedValues(table_columns, column_name):
+def createSeedValues(row_count, table_columns, column_name):
     seed_values = []
 
     # get the data size of the column
@@ -123,7 +135,7 @@ def createSeedValues(table_columns, column_name):
             column_type = column[6]
 
             # make the seed values for this column
-            for i in range(0, DATASET_SIZE):
+            for i in range(0, row_count):
                 # if its an identity column, use i
                 if column[8] == 'YES':
                     seed_values.append(i)
@@ -134,7 +146,7 @@ def createSeedValues(table_columns, column_name):
     return seed_values
 
 # generate data for this table based on data types only
-def basicDataGen(assignment_env_id, tableName, all_columns, file_number, foreign_keys):
+def basicDataGen(assignment_env_id, row_count, tableName, all_columns, file_number, foreign_keys):
     # get the schema of the table, excluding identity columns
     table_columns = []
     table_has_id = False
@@ -144,26 +156,29 @@ def basicDataGen(assignment_env_id, tableName, all_columns, file_number, foreign
         if row[8] == 'YES':
             # set flag to generate IDs and allow identity insert
             table_has_id = True
+    #print('the columns are')
+    #print(table_columns)
 
     # pick out which columns are foreign keys
     foreign_key_columns = []
     foreign_key_seeds = {}
     self_referencing_columns = []
-    for fk in foreign_keys:
-        # if this foreign key references this table only once, we can use the seed values
-        if fk[0]+'-'+fk[1] == tableName and fk[3]+'-'+fk[4] != tableName:
-            foreign_key_columns.append(fk[2])
-            foreign_key_seeds[fk[2]] = pullSeedValues(assignment_env_id, fk[3]+'-'+fk[4], fk[5])
-        
-        # if this references this table multiple times, we need to generate new values
-        elif fk[0]+'-'+fk[1] == tableName and fk[3]+'-'+fk[4] == tableName:
-            self_referencing_columns.append(fk[2])
-            self_referencing_columns.append(fk[5])
-            foreign_key_seeds[fk[5]] = createSeedValues(table_columns, fk[5])
-            # start the self referencing column with its first value
-            foreign_key_seeds[fk[2]] = [ foreign_key_seeds[fk[5]][0] ] + foreign_key_seeds[fk[5]]
+    if foreign_keys and len(foreign_keys) > 0:
+        for fk in foreign_keys:
+            # if this foreign key references this table only once, we can use the seed values
+            if fk[0]+'-'+fk[1] == tableName and fk[3]+'-'+fk[4] != tableName:
+                foreign_key_columns.append(fk[2])
+                foreign_key_seeds[fk[2]] = pullSeedValues(assignment_env_id, fk[3]+'-'+fk[4], fk[5])
+            
+            # if this references this table multiple times, we need to generate new values
+            elif fk[0]+'-'+fk[1] == tableName and fk[3]+'-'+fk[4] == tableName:
+                self_referencing_columns.append(fk[2])
+                self_referencing_columns.append(fk[5])
+                foreign_key_seeds[fk[5]] = createSeedValues(row_count, table_columns, fk[5])
+                # start the self referencing column with its first value
+                foreign_key_seeds[fk[2]] = [ foreign_key_seeds[fk[5]][0] ] + foreign_key_seeds[fk[5]]
 
-
+    #print('about to open files')
     # open a new csv file filenumber-schema-tablename.csv
     csv_file_name = str(file_number)+'-'+tableName+'.csv'
     sql_file_name = str(file_number)+'-'+tableName+'.sql'
@@ -174,21 +189,23 @@ def basicDataGen(assignment_env_id, tableName, all_columns, file_number, foreign
     sql_file_path = dataStoragePath(assignment_env_id)+sql_file_name
     sql_file = open(sql_file_path, 'w')
 
+    insert_statement = ''
     # if table has an identity column, we need to set identity insert on
     if table_has_id:
-        insert_statement = 'SET IDENTITY_INSERT {0} ON;\n'.format(tableName.replace('-','.'))
+        insert_statement += 'SET IDENTITY_INSERT {0} ON;\n'.format(tableName.replace('-','.'))
 
     insert_statement += 'INSERT INTO '+tableName.replace('-','.')+' ('
     insert_columns = []
     for column in table_columns:
         insert_columns.append(column[3])
+    #print(insert_columns)
     insert_statement += ', '.join(insert_columns)
     insert_statement += ') VALUES '
     sql_file.write(insert_statement+'\n(')
     csv_writer.writerow(insert_columns)
 
     # generate data for each row
-    for i in range(0, DATASET_SIZE):
+    for i in range(0, row_count):
         # create a new row
         row = []
         for column in table_columns:
@@ -215,7 +232,7 @@ def basicDataGen(assignment_env_id, tableName, all_columns, file_number, foreign
         csv_writer.writerow(row)
 
         # write the sql insert statement to file
-        if i == DATASET_SIZE-1:
+        if i == row_count-1:
             sql_file.write(insert_statement+' );')
         else:
             sql_file.write(insert_statement+' ),\n( ')
@@ -223,12 +240,13 @@ def basicDataGen(assignment_env_id, tableName, all_columns, file_number, foreign
     # close the files
     csv_file.close()
     sql_file.close()
+    #print('datagen finished')
 
     return
 
 
 # from external datagen module, generate a fake data set
-def createDataCsvSQL(assignment_env_id, schema_tables, foreign_keys):
+def createDataCsvSQL(assignment_env_id, row_count, schema_tables, foreign_keys):
     # create list of table names
     foreign_keys_map = {}
     for row in schema_tables:
@@ -242,6 +260,7 @@ def createDataCsvSQL(assignment_env_id, schema_tables, foreign_keys):
             foreign_keys_map[row[0]+'-'+row[1]] += 1
 
     # start datagen
+    #print('starting data generation')
     tables_completed = []
     file_number = 0
 
@@ -249,7 +268,8 @@ def createDataCsvSQL(assignment_env_id, schema_tables, foreign_keys):
     for tableName in foreign_keys_map:
         if foreign_keys_map[tableName] == 0:
             # generate data for this table based on data types only
-            basicDataGen(assignment_env_id, tableName, schema_tables, file_number, foreign_keys)
+            #print('generating data for table: '+tableName)
+            basicDataGen(assignment_env_id, row_count, tableName, schema_tables, file_number, foreign_keys)
             # add table to completed list
             tables_completed.append(tableName)
             file_number += 1
@@ -270,7 +290,8 @@ def createDataCsvSQL(assignment_env_id, schema_tables, foreign_keys):
                             break
                 if dependencies_met:
                     # generate data for this table based on dependent columns
-                    basicDataGen(assignment_env_id, tableName, schema_tables, file_number, foreign_keys)
+                    #print('generating data for table: '+tableName)
+                    basicDataGen(assignment_env_id, row_count, tableName, schema_tables, file_number, foreign_keys)
                     # add table to completed list
                     tables_completed.append(tableName)
                     file_number += 1
@@ -280,42 +301,50 @@ def createDataCsvSQL(assignment_env_id, schema_tables, foreign_keys):
 # {'db_type': 'POSTGRES', 'initial_code': '/media/assignmentenv_3/sample-table.sql'
 #             }
 def startdatagen(**kwargs):
-    post_body = kwargs.get('post_body')
-    assignment_item_id = kwargs.get('assignment_item_id')
     apikey = kwargs.get('apikey')
+    try:
+        post_body = kwargs.get('post_body')
+        assignment_env_id = kwargs.get('environment_instance_id')
 
-    db_type = post_body['db_type']
+        db_type = post_body['db_type'].lower()
+        assignment_item_id = post_body['assignment_item_id']
+        env_code_path = post_body['env_code']
+        initial_code_path = post_body['initial_code']
+        row_count = int(post_body['row_count'])
 
-    if not dbUtilities.checkDbCompat(db_type):
-        print("Database type not supported")
-        # cannot datagen, bail out
-        return
+        if not dbUtilities.checkDbCompat(db_type):
+            #print("Database type not supported")
+            # cannot datagen, bail out
+            raise Exception("Database type not supported")
 
-    # setup an admin instance for the assignment
-    initial_code_path = post_body['initial_code']
-    admin_container = controlplane.createDB(db_type, gradingProcess.ADMIN_PORT, 'datagen-'+str(assignment_item_id))
-    controlplane.setupDB(db_type, gradingProcess.ADMIN_PORT)
-    dataplane.runSQLfile(db_type, gradingProcess.ADMIN_PORT, initial_code_path)
+        # setup an admin instance for the assignment
+        admin_container = controlplane.createDB(db_type, gradingProcess.ADMIN_PORT, 'datagen-'+str(assignment_item_id))
+        controlplane.setupDB(db_type, gradingProcess.ADMIN_PORT)
 
-    # get any existing environment instances
-    environment_instances = gradingProcess.callGetEnvironmentInstances(apikey, assignment_item_id)
-    if environment_instances.length > 0:
-        # run this script in the environment
-        more_code = environment_instances[0]['initial_code']
-        dataplane.runSQLfile(db_type, gradingProcess.ADMIN_PORT, more_code)
+        # run environment setup
+        #print(env_code_path)
+        dataplane.runSQLfile(db_type, gradingProcess.ADMIN_PORT, initialCodePath(env_code_path))
+        if initial_code_path != '':
+            dataplane.runSQLfile(db_type, gradingProcess.ADMIN_PORT, initialCodePath(initial_code_path))
 
+        # get the schema of the database
+        schema_tables = dataplane.getSchemaObjects(db_type, gradingProcess.ADMIN_PORT)
+        #print(schema_tables)
 
-    assignment_env_id = 0 
-    # need to make an API on django side to make a new assignment environment
+        # check for foreign keys
+        foreign_keys = dataplane.getForeignKeys(db_type, gradingProcess.ADMIN_PORT)
+        #print(foreign_keys)
+        
+        # run datageneration
+        createDataCsvSQL(assignment_env_id, row_count, schema_tables, foreign_keys)
 
-    # get the schema of the database
-    schema_tables = dataplane.getSchemaObjects(db_type, gradingProcess.ADMIN_PORT)
+        # delete the admin container
+        controlplane.deleteDB(admin_container.id)
 
-    # check for foreign keys
-    foreign_keys = dataplane.getForeignKeys(db_type, gradingProcess.ADMIN_PORT)
+        # call api to set datagen_status to complete
+        gradingProcess.callUpdateEnvironmentInstance(apikey, assignment_env_id, 'completed')
     
-    # run datageneration
-    createDataCsvSQL(assignment_env_id, schema_tables, foreign_keys)
-
-    # delete the admin container
-    controlplane.deleteDB(admin_container.id)
+    except Exception as e:
+        gradingProcess.callUpdateEnvironmentInstance(apikey, assignment_env_id, 'failed '+str(e)[0:90])
+        # delete the admin container
+        controlplane.deleteDB(admin_container.id)

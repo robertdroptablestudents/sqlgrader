@@ -91,8 +91,9 @@ def createImage(container_id, imageName):
 def deleteDB(container_id):
     client = docker.from_env()
     todecommission = client.containers.get(container_id)
-    todecommission.stop()
-    todecommission.remove()
+    if todecommission:
+        todecommission.stop()
+        todecommission.remove()
 
 # run setup scripts on a container by db_type
 def setupDB(dbType, dbPort):
