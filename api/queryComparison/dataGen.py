@@ -1,7 +1,7 @@
 from faker import Faker
 from faker.providers import python, currency, misc, lorem
 from ..dbManagement import controlplane, dataplane, dbUtilities
-from ..grading import callGetEnvironmentInstances, ADMIN_PORT
+from ..grading import gradingProcess
 import csv, os
 
 DATASET_SIZE = 200
@@ -293,26 +293,26 @@ def startdatagen(**kwargs):
 
     # setup an admin instance for the assignment
     initial_code_path = post_body['initial_code']
-    admin_container = controlplane.createDB(db_type, ADMIN_PORT, 'datagen-'+str(assignment_item_id))
-    controlplane.setupDB(db_type, ADMIN_PORT)
-    dataplane.runSQLfile(db_type, ADMIN_PORT, initial_code_path)
+    admin_container = controlplane.createDB(db_type, gradingProcess.ADMIN_PORT, 'datagen-'+str(assignment_item_id))
+    controlplane.setupDB(db_type, gradingProcess.ADMIN_PORT)
+    dataplane.runSQLfile(db_type, gradingProcess.ADMIN_PORT, initial_code_path)
 
     # get any existing environment instances
-    environment_instances = callGetEnvironmentInstances(apikey, assignment_item_id)
+    environment_instances = gradingProcess.callGetEnvironmentInstances(apikey, assignment_item_id)
     if environment_instances.length > 0:
         # run this script in the environment
         more_code = environment_instances[0]['initial_code']
-        dataplane.runSQLfile(db_type, ADMIN_PORT, more_code)
+        dataplane.runSQLfile(db_type, gradingProcess.ADMIN_PORT, more_code)
 
 
     assignment_env_id = 0 
     # need to make an API on django side to make a new assignment environment
 
     # get the schema of the database
-    schema_tables = dataplane.getSchemaObjects(db_type, ADMIN_PORT)
+    schema_tables = dataplane.getSchemaObjects(db_type, gradingProcess.ADMIN_PORT)
 
     # check for foreign keys
-    foreign_keys = dataplane.getForeignKeys(db_type, ADMIN_PORT)
+    foreign_keys = dataplane.getForeignKeys(db_type, gradingProcess.ADMIN_PORT)
     
     # run datageneration
     createDataCsvSQL(assignment_env_id, schema_tables, foreign_keys)
