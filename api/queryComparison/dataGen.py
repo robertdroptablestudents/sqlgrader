@@ -1,5 +1,4 @@
 from faker import Faker
-from faker.providers import python, currency, misc, lorem
 from ..dbManagement import controlplane, dataplane, dbUtilities
 from ..grading import gradingProcess
 import csv, os
@@ -61,6 +60,8 @@ def fakerData(column_type, isUnique, data_size):
     if column_type in ('string', 'nvarchar', 'varchar', 'text', 'char', 'nchar','char varying', 'nchar varying', 'character varying', 'character'):
         if data_size == '-1': # resize (max) columns
             data_size = '500'
+        if data_size == ',': # resize flex columns
+            data_size = '50'
         if isUnique == 'YES':
             data_size = int(data_size)
             return faker.unique.pystr(min_chars=1, max_chars=data_size)
@@ -70,7 +71,7 @@ def fakerData(column_type, isUnique, data_size):
                 return faker.text(max_nb_chars=data_size).replace('\n', ' ')
             else:
                 return faker.pystr(min_chars=1, max_chars=data_size)
-    elif column_type in ('uniqueidentifier'):
+    elif column_type in ('uniqueidentifier', 'uuid'):
         return faker.uuid4()
     elif 'int' in column_type: # encompasses tinyint, smallint, bigint, anyint, int
         # need to set min and max based on data size
@@ -78,7 +79,7 @@ def fakerData(column_type, isUnique, data_size):
             return faker.unique.pyint(min_value=INT_SETS[column_type]['min'], max_value=INT_SETS[column_type]['max'])
         else:
             return faker.pyint(min_value=INT_SETS[column_type]['min'], max_value=INT_SETS[column_type]['max'])
-    elif column_type in ('float'):
+    elif column_type in ('float', 'real', 'double precision'):
         if isUnique == 'YES':
             return faker.unique.pyfloat()
         else:
@@ -92,16 +93,20 @@ def fakerData(column_type, isUnique, data_size):
             return faker.pydecimal(left_digits=left_size, right_digits=right_size)
     elif column_type in ('money', 'currency'):
         return faker.pricetag()
-    elif 'binary' in column_type:
-        if data_size == '-1':
+    elif 'binary' in column_type or column_type in ('varbinary', 'image', 'bytea'):
+        if data_size == '-1' or data_size == ',':
             data_size = '64'
         data_size = int(data_size)
         return faker.binary(length=data_size)
-    elif column_type in ('bit'):
+    elif column_type in ('bit', 'boolean'):
         return faker.pybool() 
-    elif column_type in ('datetime', 'date', 'time', 'datetime2', 'datetimeoffset'):
+    elif column_type.split(' ')[0] in ('datetime', 'date', 'time', 'datetime2', 'datetimeoffset'): # includes with and without timezone
         return faker.date_time_this_decade()
-    # xml
+    elif column_type in ('inet','cidr'):
+        return faker.ipv4()
+    elif column_type in ('macaddr'):
+        return faker.mac_address()
+    # xml, anyarray, array, time interval
     else:
         return ''
 
@@ -140,13 +145,13 @@ def createSeedValues(row_count, table_columns, column_name):
                 if column[8] == 'YES':
                     seed_values.append(i)
                 else:
-                    seed_values.append(fakerData(column_type, isUnique, data_size))
+                    seed_values.append(fakerData(column_type.lower(), isUnique, data_size))
             
             break
     return seed_values
 
 # generate data for this table based on data types only
-def basicDataGen(assignment_env_id, row_count, tableName, all_columns, file_number, foreign_keys):
+def basicDataGen(assignment_env_id, row_count, tableName, all_columns, file_number, foreign_keys, db_type):
     # get the schema of the table, excluding identity columns
     table_columns = []
     table_has_id = False
@@ -190,8 +195,9 @@ def basicDataGen(assignment_env_id, row_count, tableName, all_columns, file_numb
     sql_file = open(sql_file_path, 'w')
 
     insert_statement = ''
-    # if table has an identity column, we need to set identity insert on
-    if table_has_id:
+    # if table has an identity column, we need to set identity insert on for mssql
+    # not required for postgres
+    if table_has_id and db_type == 'mssql':
         insert_statement += 'SET IDENTITY_INSERT {0} ON;\n'.format(tableName.replace('-','.'))
 
     insert_statement += 'INSERT INTO '+tableName.replace('-','.')+' ('
@@ -221,7 +227,7 @@ def basicDataGen(assignment_env_id, row_count, tableName, all_columns, file_numb
                 new_data = i
             # not linked to another column, generate data
             else:
-                new_data = fakerData(column[6], column[9], column[7])
+                new_data = fakerData(column[6].lower(), column[9], column[7])
             row.append(str(new_data))
             
             # check for guids, identifiers
@@ -246,7 +252,7 @@ def basicDataGen(assignment_env_id, row_count, tableName, all_columns, file_numb
 
 
 # from external datagen module, generate a fake data set
-def createDataCsvSQL(assignment_env_id, row_count, schema_tables, foreign_keys):
+def createDataCsvSQL(assignment_env_id, row_count, schema_tables, foreign_keys, db_type):
     # create list of table names
     foreign_keys_map = {}
     for row in schema_tables:
@@ -269,7 +275,7 @@ def createDataCsvSQL(assignment_env_id, row_count, schema_tables, foreign_keys):
         if foreign_keys_map[tableName] == 0:
             # generate data for this table based on data types only
             #print('generating data for table: '+tableName)
-            basicDataGen(assignment_env_id, row_count, tableName, schema_tables, file_number, foreign_keys)
+            basicDataGen(assignment_env_id, row_count, tableName, schema_tables, file_number, foreign_keys, db_type)
             # add table to completed list
             tables_completed.append(tableName)
             file_number += 1
@@ -291,7 +297,7 @@ def createDataCsvSQL(assignment_env_id, row_count, schema_tables, foreign_keys):
                 if dependencies_met:
                     # generate data for this table based on dependent columns
                     #print('generating data for table: '+tableName)
-                    basicDataGen(assignment_env_id, row_count, tableName, schema_tables, file_number, foreign_keys)
+                    basicDataGen(assignment_env_id, row_count, tableName, schema_tables, file_number, foreign_keys, db_type)
                     # add table to completed list
                     tables_completed.append(tableName)
                     file_number += 1
@@ -336,7 +342,7 @@ def startdatagen(**kwargs):
         #print(foreign_keys)
         
         # run datageneration
-        createDataCsvSQL(assignment_env_id, row_count, schema_tables, foreign_keys)
+        createDataCsvSQL(assignment_env_id, row_count, schema_tables, foreign_keys, db_type)
 
         # delete the admin container
         controlplane.deleteDB(admin_container.id)
