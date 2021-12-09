@@ -18,7 +18,7 @@ class StudentGroup(models.Model):
 class Student(models.Model):
     first_name = models.CharField(max_length=200)
     last_name = models.CharField(max_length=200)
-    student_custom_id = models.CharField(max_length=100)
+    student_custom_id = models.CharField(max_length=100, verbose_name="Custom ID")
     student_group = models.ForeignKey(StudentGroup, on_delete=models.SET(''), blank=True)
 
     def __str__(self):

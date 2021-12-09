@@ -3,17 +3,19 @@ from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.urls import reverse
 
 from ..models import Student, StudentGroup, Assignment, AssignmentEnvironment, AssignmentItem, StudentSubmission, StudentSubmissionItem
-
+from ..tables import studenttables
 
 def index(request):
     return render(request, 'instructor/index.html')
 
 def studentlist(request):
     full_student_list = Student.objects.all()
+    student_table = studenttables.StudentTable(full_student_list)
+    student_table.paginate(page=request.GET.get('page', 1), per_page=15)
     active_groups = StudentGroup.objects.filter(is_active=True)
     groups_for_newstudent = StudentGroup.objects.filter(is_active=True).values()
     context = {
-        'full_student_list': full_student_list,
+        'full_student_list': student_table,
         'active_groups': active_groups,
         'groups_for_newstudent': groups_for_newstudent,
     }
@@ -64,10 +66,12 @@ def studentgroupdetails(request, studentgroup_id):
     try:
         group = StudentGroup.objects.get(pk=studentgroup_id)
         students = Student.objects.filter(student_group=group)
+        student_table = studenttables.StudentGroupTable(students)
+        student_table.paginate(page=request.GET.get('page', 1), per_page=15)
     except StudentGroup.DoesNotExist:
         raise Http404("group does not exist")
 
-    return render(request, 'instructor/studentgroupdetails.html', {'group': group, 'students': students})
+    return render(request, 'instructor/studentgroupdetails.html', {'group': group, 'student_table': student_table})
 
 def studentgroup(request):
     try:

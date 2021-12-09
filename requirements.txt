@@ -1,7 +1,8 @@
-# django dev environment, also in sqlgrader/requirements.txt
+# django dev environment, also in webui/requirements.txt
 Django==3.2.9
 httpx
 djangorestframework
+django-tables2
 
 
 # flask dev environment, also in api/requirements.txt
