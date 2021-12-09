@@ -19,5 +19,7 @@ jobs:
         script: |
           docker container stop sqlgrader
           docker container rm sqlgrader
+          docker image prune -f
+          docker volume prune -f
           docker pull ghcr.io/robertdroptablestudents/sqlgrader:preview-latest
           docker run -p 80:80 --name sqlgrader --privileged -e THISURL=sqlgrader.drewsk.tech -e DJANGO_SUPERUSER_PASSWORD=${{ secrets.DROPLET_PASS }} -d ghcr.io/robertdroptablestudents/sqlgrader:preview-latest

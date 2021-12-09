@@ -10,9 +10,9 @@ fi
 
 
 
-# loop until docker daemon is started for max of 30 seconds
+# loop until docker daemon is started for max of 1 minute
 i=0
-while [ ! -S /var/run/docker.sock ] && [ $i -lt 30 ]
+while [ ! -S /var/run/docker.sock ] && [ $i -lt 60 ]
 do
     echo "Waiting for docker daemon to be available..."
     i+=1
