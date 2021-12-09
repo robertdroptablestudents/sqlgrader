@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load render_table from django_tables2 %}
 
 {% block title %}Students{% endblock %}
 {% block tabname %}students{% endblock %}
@@ -10,7 +11,7 @@
 
 <div class="container">
     <div class="row">
-        <div class="col-md-6">
+        <div class="col-md-4">
         <!-- studentgroups -->
 
         <div class="card">
@@ -51,7 +52,7 @@
 
         </div>
 
-        <div class="col-md-6">
+        <div class="col-md-8">
         <!-- students -->
         <div class="card">
             <div class="card-body">
@@ -98,16 +99,8 @@
         </div>
 
         <div class="mt-4">
-        <h5>Students</h5>
-        {% if full_student_list %}
-            <ul>
-            {% for student in full_student_list  %}
-                <li><i class="fas fa-id-badge"></i> <a href="{% url 'instructor:studentdetails' student_id=student.id %}">{{ student.first_name }}</a></li>
-            {% endfor %}
-            </ul>
-        {% else %}
-            <p>No students entered.</p>
-        {% endif %}
+        <h5>All Students</h5>
+        {% render_table full_student_list %}
         </div>
     </div>
 </div>
