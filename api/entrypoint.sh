@@ -20,8 +20,9 @@ do
 done
 
 echo "starting build"
+docker network create --driver bridge sqlgrader-network
 docker build -t webui /code/
-docker run -d -v /code/webui/sqlite:/code/webui/sqlite -v /code/webui/media:/code/webui/media -e THISURL=$THISURL -e BUILDNUMBER=$BUILDNUMBER -e DJANGO_SUPERUSER_PASSWORD=$DJANGO_SUPERUSER_PASSWORD -p 80:80 webui
+docker run -d -v /code/webui/sqlite:/code/webui/sqlite -v /code/webui/media:/code/webui/media -e THISURL=$THISURL -e BUILDNUMBER=$BUILDNUMBER -e DJANGO_SUPERUSER_PASSWORD=$DJANGO_SUPERUSER_PASSWORD --add-host host.docker.internal:host-gateway --network="sqlgrader-network" --name webui -p 80:80 webui
 echo "container running"
 
 cd /code/api

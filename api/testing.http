@@ -1,11 +1,8 @@
-POST http://localhost:5000/grading/100 HTTP/1.1
+POST http://localhost:5000/grading/7 HTTP/1.1
 Content-Type: application/json
+apikey: 435dcd3b2e64164942c7213d1ac53c069e86c228
 
-{
-    "student_id": "100",
-    "assignment_id": "1",
-    "score": "100"
-}
+[{"id": 12, "assignment_item": {"id": 1, "assignmentenvironment": {"db_type": "POSTGRES", "initial_code": "/media/assignmentenv_3/sample-table.sql"}, "item_number": 1, "item_type": "QUERY", "item_solution": "/media/assignmentitem_1/sample-query_CWOZKc4.sql", "item_name": "test query", "assignment": 3}, "grading_process": 7}]
 
 
 

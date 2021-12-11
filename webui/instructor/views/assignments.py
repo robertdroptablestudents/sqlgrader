@@ -85,7 +85,7 @@ def assignmentitemedit(request):
 # creates new EnvironmentInstance
 # form elements: assignment_item_id, environment_name, initial_code
 def environmentinstance(request):
-    new_environment = EnvironmentInstance.objects.create(item=AssignmentItem.objects.get(pk=request.POST['assignment_item_id']), environment_name=request.POST['environment_name'])
+    new_environment = EnvironmentInstance.objects.create(item=AssignmentItem.objects.get(pk=request.POST['assignment_item_id']), environment_name=request.POST['environment_name'], points_possible=request.POST['points_possible'])
     new_environment.save()
     if 'initial_code' in request.FILES:
         new_environment.initial_code = request.FILES['initial_code']
@@ -100,6 +100,8 @@ def environmentinstanceedit(request):
         environment_instance.environment_name = request.POST['environment_name']
         if 'initial_code' in request.FILES:
             environment_instance.initial_code = request.FILES['initial_code']
+        if 'points_possible' in request.POST:
+            environment_instance.points_possible = request.POST['points_possible']
         environment_instance.save()
     except EnvironmentInstance.DoesNotExist:
         raise Http404("environment instance does not exist")

@@ -2,7 +2,8 @@ from django.shortcuts import render
 from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.urls import reverse
 
-from ..models import Student, StudentGroup, Assignment, AssignmentEnvironment, AssignmentItem, StudentSubmission, StudentSubmissionItem
+
+from ..models import Student, StudentGroup, Assignment, AssignmentEnvironment, AssignmentItem, StudentSubmission, StudentSubmissionItem, StudentSubmissionItemGrade
 from ..tables import studenttables
 
 def index(request):
@@ -93,3 +94,21 @@ def studentgroupedit(request):
     except:
         raise Http404("error editing group")
     return HttpResponseRedirect(reverse('instructor:studentgroupdetails', args=(group.id,)))
+
+
+def submissiondetails(request, submission_id):
+    submission = StudentSubmission.objects.get(pk=submission_id)
+    assignment_items = AssignmentItem.objects.filter(assignment=submission.assignment)
+    submission_items = StudentSubmissionItem.objects.filter(student_submission=submission)
+    submission_grades = StudentSubmissionItemGrade.objects.filter(student_submission_item__in=submission_items)
+    grade_table = studenttables.StudentSubmissionItemGradeTable(submission_grades)
+    
+    context = {
+        'submission': submission,
+        'submission_items': submission_items,
+        'submission_grades': submission_grades,
+        'assignment_items': assignment_items,
+        'grade_table': grade_table,
+    }
+
+    return render(request, 'instructor/studentsubmission.html', context)

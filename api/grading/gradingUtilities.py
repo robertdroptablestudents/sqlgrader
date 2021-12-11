@@ -11,7 +11,7 @@ def queryTupleComparison(admin_results, student_results):
     # compare the result set lengths
     if len(admin_results) != len(student_results):
         length_difference = abs(len(admin_results) - len(student_results))
-        specific_feedback = "The number of rows returned by the query differs from the expected number of rows by " + length_difference + " row(s)."
+        specific_feedback = "The number of rows returned by the query differs from the expected number of rows by " + str(length_difference) + " row(s)."
     else:
         specific_feedback = "The number of rows returned by the query matches the expected number of rows."
 
@@ -85,7 +85,7 @@ def schemaObjectComparison(admin_objects, student_objects):
     # compare the number of schema objects
     if len(admin_objects) != len(student_objects):
         length_difference = abs(len(admin_objects) - len(student_objects))
-        specific_feedback = "The number of schema objects differs from the expected number of schema objects by " + length_difference + " schema object(s)."
+        specific_feedback = "The number of schema objects differs from the expected number of schema objects by " + str(length_difference) + " schema object(s)."
     else:
         specific_feedback = "The number of schema objects matches the expected number of schema objects."
 
