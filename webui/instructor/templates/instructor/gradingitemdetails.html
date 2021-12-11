@@ -5,7 +5,8 @@
 {% block tabname %}grading{% endblock %}
 {% block breadcrumbs %}
     <li class="breadcrumb-item"><a href="{% url 'instructor:gradingoverview' %}">Grading</a></li>
-    <li class="breadcrumb-item active" aria-current="page">{{ grading_process.assignment.assignment_name }}: {{ grading_process.process_status }}</li>
+    <li class="breadcrumb-item"><a href="{% url 'instructor:gradingdetails'  grading_process.id %}">{{ grading_process.assignment.assignment_name }}: {{ grading_process.process_status }}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ grading_process.assignment.assignment_name }}: item #{{assignment_item.item_number}} ({{ assignment_item.item_name }})</li>
 {% endblock %}
 
 {% block content %}

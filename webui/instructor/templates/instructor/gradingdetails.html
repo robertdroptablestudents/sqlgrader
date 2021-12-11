@@ -47,14 +47,25 @@
 <!-- add items to grade, show items to grade -->
 <div class="row border-top pt-3">
     <div class="col-md-6">
-        <h3>Items to grade</h3>
+        <h4>{{ grading_process.assignment.assignment_name }} Items to Grade</h4>
         {% if grading_assignments %}
         <table class="table">
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Assignment</th>
+                    <th>Grades</th>
+                </tr>
+            </thead>
+            <tbody>
             {% for assignmentitem in grading_assignments %}
-            <li> {{ assignmentitem.assignment_item.item_number }}.
-                <a href="{% url 'instructor:assignmentitemdetails' assignmentitem.assignment_item.id %}">{{ assignmentitem.assignment_item.item_name }} ({{ assignmentitem.assignment_item.item_type }})</a>
-            </li>
+                <tr>
+                    <td>{{ assignmentitem.assignment_item.item_number }}. {{ assignmentitem.assignment_item.item_name }} ({{ assignmentitem.assignment_item.item_type }})</td>
+                    <td><a href="{% url 'instructor:assignmentitemdetails' assignmentitem.assignment_item.id %}"><i class="fas fa-book" title="Open Assignment Item"></i></a></td>
+                    <td><a href="{% url 'instructor:gradingitemdetails' grading_process.id assignmentitem.assignment_item.id %}"><i class="fas fa-clipboard-check" title="Open Grades"></i></a></td>
+                </tr>
             {% endfor %}
+            </tbody>
         </table class="table">
         {% endif %}
     </div>
@@ -92,7 +103,7 @@
 <!-- show grades -->
 <div class="row border-top pt-3">
     <div class="col-md-12">
-        <h5>Grades for {{ grading_process.assignment.assignment_name }}</h5>
+        <h4>Grades for {{ grading_process.assignment.assignment_name }}</h4>
         {% render_table grades_table %}
     </div>
 </div>
