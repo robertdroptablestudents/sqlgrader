@@ -3,6 +3,8 @@ import psycopg, mysql.connector, pyodbc, os
 from .dbUtilities import get_connectionstring
 from ..grading import gradingUtilities
 
+FILEPREFIX = '../webui'
+
 # universal query execution
 # does not return results
 def runSQLcommand(db_type, container_port, sql_command):
@@ -90,6 +92,7 @@ def runSQLFileReturn(db_type, container_port, sql_file):
 
     # Get the SQL file
     print("Running SQL file: " + sql_file)
+    results = []
     # Run the SQL
     match db_type.lower():
         case 'postgres':
@@ -125,7 +128,8 @@ def runSQLFileReturn(db_type, container_port, sql_file):
             except Exception as e:
                 print('Error running script')
                 print(e)
-
+    print('returning results')
+    print(results)
     return results
 
 # get foreign key constraints
@@ -166,8 +170,8 @@ def compareSchemas(db_type, admin_port, grading_port):
 def compareQuery(db_type, admin_port, grading_port, adminsql, studentsql):
     return_content = {}
 
-    admin_results = runSQLFileReturn(db_type, admin_port, adminsql)
-    student_results = runSQLFileReturn(db_type, grading_port, studentsql)
+    admin_results = runSQLFileReturn(db_type, admin_port, FILEPREFIX + adminsql)
+    student_results = runSQLFileReturn(db_type, grading_port, FILEPREFIX + studentsql)
     
     return_content = gradingUtilities.queryTupleComparison(admin_results, student_results)
 

@@ -17,7 +17,7 @@ databaseOptions = {
     'environment' : {
         'mssql': {'ACCEPT_EULA': 'Y', 'SA_PASSWORD': os.environ['DEFAULTPASSWORD']},
         'mysql': {'MYSQL_ROOT_PASSWORD': os.environ['DEFAULTPASSWORD'], 'MYSQL_ROOT_HOST': '%'},
-        'postgres': {'POSTGRES_PASSWORD': os.environ['DEFAULTPASSWORD']},
+        'postgres': {'POSTGRES_PASSWORD': os.environ['DEFAULTPASSWORD'], 'PGDATA': '/var/lib/postgresql-static/data'},
     },
     'initialconnstring': {
         'mssql': 'DRIVER={ODBC Driver 17 for SQL Server};SERVER=localhost;PORT=1437;DATABASE=master;UID=sa;PWD='+quote_plus(os.environ['DEFAULTPASSWORD'])+';TDS_Version=8.0;',
@@ -51,13 +51,55 @@ def createDB(dbType, dbPort, containerName):
         container.remove()
 
     # Create container
-    new_database = client.containers.create(databaseOptions['images'][dbType], detach=True, labels={"sqlgrader": containerName }, name=container_name, environment=databaseOptions['environment'][dbType], ports={databaseOptions['ports'][dbType]: dbPort})
+    new_database = client.containers.create(databaseOptions['images'][dbType], detach=True, labels={"sqlgrader": containerName }, name=container_name, network="sqlgrader-network", environment=databaseOptions['environment'][dbType], ports={databaseOptions['ports'][dbType]: dbPort})
 
     # Start container
     new_database.start()
     print('Started new container {}'.format(new_database.id))
 
     return new_database
+
+
+# return when dbengine is ready
+def readyEngine(dbType, dbPort):
+    num_retry = 20
+    while num_retry > 0:
+        print('waiting 2 seconds')
+        sleep(2)
+        print('done waiting')
+        try:
+            match dbType.lower():
+                case 'postgres':
+                    conn = psycopg.connect(get_connectionstring(dbType, dbPort, True), autocommit=True)
+                    cur = conn.cursor()
+                    cur.execute("select version()")
+                    db_version = cur.fetchone()
+                    print(db_version)
+                    cur.close()
+                    conn.close()
+
+                case 'mysql':
+                    conn = mysql.connector.connect(**get_connectionstring(dbType, dbPort, True))
+                    with conn.cursor() as cur:
+                        cur.execute("show databases")
+                        for db in cur:
+                            print(db)
+                        cur.close()
+                        conn.close()
+                case 'mssql':
+                    conn = pyodbc.connect(get_connectionstring(dbType, dbPort, True))
+                    cur = conn.cursor()
+                    cur.execute("select @@version")
+                    db_version = cur.fetchone()
+                    print(db_version)
+                    cur.close()
+                    conn.close()
+            break
+        except Exception as e:
+            print(e)
+            num_retry -= 1
+            continue
+
 
 # create a DB container from an image previously captured
 def createClonedDB(dbImageName, dbType, dbPort, containerName):
@@ -71,11 +113,12 @@ def createClonedDB(dbImageName, dbType, dbPort, containerName):
         container.remove()
 
     # create container
-    new_database = client.containers.create(dbImageName, detach=True, labels={"sqlgrader": containerName }, name=container_name, environment=databaseOptions['environment'][dbType], ports={databaseOptions['ports'][dbType]: dbPort})
+    new_database = client.containers.create(dbImageName, detach=True, labels={"sqlgrader": containerName }, name=container_name, network="sqlgrader-network", environment=databaseOptions['environment'][dbType], ports={databaseOptions['ports'][dbType]: dbPort})
 
     # Start container
     new_database.start()
     print('Started new container {}'.format(new_database.id))
+    readyEngine(dbType, dbPort)
 
     return new_database
 
@@ -97,43 +140,36 @@ def deleteDB(container_id):
 
 # run setup scripts on a container by db_type
 def setupDB(dbType, dbPort):
-    num_retry = 10
-    while num_retry > 0:
-        print('waiting 2 seconds')
-        sleep(2)
-        print('done waiting')
-        try:
-            match dbType.lower():
-                case 'postgres':
-                    conn = psycopg.connect(get_connectionstring(dbType, dbPort, True), autocommit=True)
-                    cur = conn.cursor()
-                    cur.execute("CREATE DATABASE admindb")
-                    cur.execute("select version()")
-                    db_version = cur.fetchone()
-                    print(db_version)
-                    cur.close()
-                    conn.close()
+    readyEngine(dbType, dbPort)
+    try:
+        match dbType.lower():
+            case 'postgres':
+                conn = psycopg.connect(get_connectionstring(dbType, dbPort, True), autocommit=True)
+                cur = conn.cursor()
+                cur.execute("CREATE DATABASE admindb")
+                cur.execute("select version()")
+                db_version = cur.fetchone()
+                print(db_version)
+                cur.close()
+                conn.close()
 
-                case 'mysql':
-                    conn = mysql.connector.connect(**get_connectionstring(dbType, dbPort, True))
-                    with conn.cursor() as cur:
-                        cur.execute("CREATE DATABASE admindb")
-                        cur.execute("show databases")
-                        for db in cur:
-                            print(db)
-                        cur.close()
-                        conn.close()
-                case 'mssql':
-                    conn = pyodbc.connect(get_connectionstring(dbType, dbPort, True))
-                    cur = conn.cursor()
+            case 'mysql':
+                conn = mysql.connector.connect(**get_connectionstring(dbType, dbPort, True))
+                with conn.cursor() as cur:
                     cur.execute("CREATE DATABASE admindb")
-                    cur.execute("select @@version")
-                    db_version = cur.fetchone()
-                    print(db_version)
+                    cur.execute("show databases")
+                    for db in cur:
+                        print(db)
                     cur.close()
                     conn.close()
-            break
-        except Exception as e:
-            print(e)
-            num_retry -= 1
-            continue
+            case 'mssql':
+                conn = pyodbc.connect(get_connectionstring(dbType, dbPort, True))
+                cur = conn.cursor()
+                cur.execute("CREATE DATABASE admindb")
+                cur.execute("select @@version")
+                db_version = cur.fetchone()
+                print(db_version)
+                cur.close()
+                conn.close()
+    except Exception as e:
+        print(e)
