@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load render_table from django_tables2 %}
 
 {% block title %}Grading {{ grading_process.assignment.assignment_name }}{% endblock %}
 {% block tabname %}grading{% endblock %}
@@ -48,13 +49,13 @@
     <div class="col-md-6">
         <h3>Items to grade</h3>
         {% if grading_assignments %}
-        <ul>
+        <table class="table">
             {% for assignmentitem in grading_assignments %}
             <li> {{ assignmentitem.assignment_item.item_number }}.
                 <a href="{% url 'instructor:assignmentitemdetails' assignmentitem.assignment_item.id %}">{{ assignmentitem.assignment_item.item_name }} ({{ assignmentitem.assignment_item.item_type }})</a>
             </li>
             {% endfor %}
-        </ul>
+        </table class="table">
         {% endif %}
     </div>
     <div class="col-md-6">
@@ -87,6 +88,14 @@
     </div>
 </div>
 
+
+<!-- show grades -->
+<div class="row border-top pt-3">
+    <div class="col-md-12">
+        <h5>Grades for {{ grading_process.assignment.assignment_name }}</h5>
+        {% render_table grades_table %}
+    </div>
+</div>
 
 
 {% endblock %}

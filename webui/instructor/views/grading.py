@@ -7,8 +7,8 @@ from django.contrib.auth.models import User
 import requests, json
 from rest_framework.authtoken.models import Token
 
-from ..models import GradingProcess, GradingAssignment, GradingContainer, Assignment, AssignmentItem, AssignmentEnvironment, StudentSubmissionItem, EnvironmentInstance
-
+from ..models import GradingProcess, GradingAssignment, GradingContainer, Assignment, AssignmentItem, AssignmentEnvironment, StudentSubmissionItem, StudentSubmissionItemGrade, EnvironmentInstance
+from ..tables import gradingtables
 from ..serializers import GradingAssignmentSerializer, EnvironmentInstanceSerializer, SubmissionItemSerializer
 
 APIURL = "http://host.docker.internal:5000/"
@@ -40,15 +40,32 @@ def gradingprocess(request):
 def gradingdetails(request, gradingprocess_id):
     grading_process = GradingProcess.objects.get(pk=gradingprocess_id)
     grading_assignments = GradingAssignment.objects.filter(grading_process=grading_process)
-    grading_containers = GradingContainer.objects.filter(grading_process=grading_process)
     assignment_items = AssignmentItem.objects.filter(assignment=grading_process.assignment)
+    student_submissions = StudentSubmissionItem.objects.filter(assignment_item__in=assignment_items)
+    grades_table = gradingtables.AssignmentGradesTable(student_submissions)
+    grades_table.paginate(page=request.GET.get('page', 1), per_page=25)
     context = {
         'grading_process': grading_process,
         'grading_assignments': grading_assignments,
-        'grading_containers': grading_containers,
         'assignment_items': assignment_items,
+        'grades_table': grades_table,
     }
     return render(request, 'instructor/gradingdetails.html', context)
+
+# grading for a single item details view
+def gradingitemdetails(request, gradingprocess_id, assignmentitem_id):
+    grading_process = GradingProcess.objects.get(pk=gradingprocess_id)
+    student_submissions = StudentSubmissionItem.objects.filter(assignment_item=assignmentitem_id)
+    item_grades = StudentSubmissionItemGrade.objects.filter(student_submission_item__in=student_submissions)
+    grades_table = gradingtables.StudentSubmissionItemGradeTable(item_grades)
+    grades_table.paginate(page=request.GET.get('page', 1), per_page=25)
+    assignment_item = AssignmentItem.objects.get(pk=assignmentitem_id)
+    context = {
+        'grading_process': grading_process,
+        'assignment_item': assignment_item,
+        'grades_table': grades_table,
+    }
+    return render(request, 'instructor/gradingitemdetails.html', context)
 
 # create new gradingassignment
 # form elements grading_process_id, assignment_item

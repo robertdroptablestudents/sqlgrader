@@ -37,6 +37,7 @@ urlpatterns = [
     path('grading/<int:gradingprocess_id>', views.gradingdetails, name='gradingdetails'),
     path('gradingitem', views.gradingitem, name='gradingitem'),
     path('gradingstart', views.gradingstart, name='gradingstart'),
+    path('gradingitemdetails/<int:gradingprocess_id>/<int:assignmentitem_id>', views.gradingitemdetails, name='gradingitemdetails'),
 
     # api endpoints
     path('api_updategradingstatus', views.update_gradingstatus.as_view(), name='api_updategradingstatus'),
