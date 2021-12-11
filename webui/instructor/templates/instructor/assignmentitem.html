@@ -70,15 +70,19 @@
                             <label for="environment_name">Environment Name</label>
                         </div>
                     </div>
+                    <div class="col mb-3">
+                        <div class="form-floating">
+                            <input type="number" class="form-control" id="points_possible" name="points_possible" style="width:250px;" value="100">
+                            <label for="points_possible">Points</label>
+                        </div>
+                    </div>
                 </div>
                 <div class="row">
                     <div class="col mb-3">
                         <label for="initial_code">Item-specific environment setup (optional):</label>
                         <input type="file" id="initial_code" name="initial_code" accept=".sql">
                     </div>
-                </div>
-                <div class="row">
-                    <div class="mb-3">
+                    <div class="col pt-3 mb-3">
                         <button type="submit" class="btn btn-success float-end" value="Add item environment">
                             Add Item Environment <i class="fas fa-plus-square"></i>
                         </button>
@@ -115,15 +119,19 @@
                                         <label for="environment_name">Environment Name</label>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="row">
                                 <div class="col mb-3">
-                                    <label for="initial_code">Item-specific environment setup (optional):</label>
-                                    <input type="file" id="initial_code" name="initial_code" accept=".sql">
+                                    <div class="form-floating">
+                                        <input type="number" class="form-control" id="points_possible" name="points_possible" style="width:250px;" value="{{ env_instance.points_possible }}">
+                                        <label for="points_possible">Points</label>
+                                    </div>
                                 </div>
                             </div>
                             <div class="row">
-                                <div class="mb-3">
+                                <div class="col mb-3">
+                                    <label for="initial_code">Environment instance setup (optional):</label>
+                                    <input type="file" id="initial_code" name="initial_code" accept=".sql">
+                                </div>
+                                <div class="col pt-4 mb-3">
                                     <button type="submit" class="btn btn-secondary btn-sm float-end" value="Update environment">
                                         Update Environment <i class="fas fa-save"></i>
                                     </button>
@@ -149,7 +157,7 @@
                                     </div>
                                     <div class="col mb-2">
                                         <div class="form-floating">
-                                            <input type="number" class="form-control" id="row_count" name="row_count" style="width:120px;" value="100">
+                                            <input type="number" class="form-control" id="row_count" name="row_count" style="width:120px;" value="500">
                                             <label for="row_count">Row Count</label>
                                         </div>
                                     </div>

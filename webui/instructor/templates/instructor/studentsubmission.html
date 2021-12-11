@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% load render_table from django_tables2 %}
+
+{% block title %}Assignment  submission by {{ submission.student.first_name }} {{ submission.student.last_name }}{% endblock %}
+{% block tabname %}students{% endblock %}
+{% block breadcrumbs %}
+    <li class="breadcrumb-item"><a href="{% url 'instructor:studentlist' %}">Students</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'instructor:studentdetails' student_id=1 %}">{{ submission.student.first_name }} {{ submission.student.last_name }} ({{ submission.student.student_custom_id }})</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Submission: {{ submission.assignment.assignment_name }}</li>
+{% endblock %}
+
+{% block content %}
+
+<div class="row">
+    <div class="col-md-12">
+        <h2><i class="fas fa-book"></i> {{ submission.assignment.assignment_name}} by {{ submission.student.first_name }} {{ submission.student.last_name }} ({{ submission.student.student_custom_id }})</h2>
+    </div>
+</div>
+
+<div class="row">
+    <!-- list of student submissions -->
+    <div class="col-md-6 mt-3">
+        <h5><i class="fas fa-list-ol"></i> Assignment Item Submissions</h5>
+        {% if assignment_items %}
+        <ul>
+            {% for assignment_item in assignment_items %}
+            <li class="list-group-item">{{ assignment_item.item_number }}: {{ assignment_item.item_name }} 
+                {% for item in submission_items %}
+                    {% if item.assignment_item_id == assignment_item.id %}
+                        <i class="fas fa-file-code"></i> <a href="{{ MEDIA_URL }}{{ item.submission_file }}">{{ item.submission_file }} </a>
+                        <br/> {{ item.grading_log }}
+                    </li>
+                    {% endif %}
+                {% endfor %}
+            {% endfor %}
+        </ul>
+        {% endif %}
+    </div>
+</div>
+
+
+
+<!-- grade details -->
+<div class="row">
+    <div class="col-md-12">
+        <h5>Grades</h5>
+        {% render_table grade_table %}
+    </div>
+</div>
+
+
+
+
+{% endblock %}

@@ -4,14 +4,14 @@ from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.urls import reverse
 from django.contrib.auth.models import User
 
-import requests
+import requests, json
 from rest_framework.authtoken.models import Token
 
 from ..models import GradingProcess, GradingAssignment, GradingContainer, Assignment, AssignmentItem, AssignmentEnvironment, StudentSubmissionItem, EnvironmentInstance
 
 from ..serializers import GradingAssignmentSerializer, EnvironmentInstanceSerializer, SubmissionItemSerializer
 
-APIURL = "http://localhost:5000/"
+APIURL = "http://host.docker.internal:5000/"
 
 def gradingoverview(request):
     full_grading_list = GradingProcess.objects.all()
@@ -80,7 +80,9 @@ def gradingstart(request):
     # token.key in header
     callURL = APIURL+'grading/'+grading_process_id
     headers = {'apikey': token.key}
-    startGrading = requests.post(callURL, json=grading_assignmentitem.data, headers=headers)
+    print(json.dumps(grading_assignmentitem.data))
+    print(headers)
+    startGrading = requests.post(callURL, json=json.dumps(grading_assignmentitem.data), headers=headers)
 
     if startGrading.status_code != 200:
         grading_process.gradingstatusupdate('Error initializing grading service')
