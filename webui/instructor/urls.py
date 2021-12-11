@@ -37,6 +37,7 @@ urlpatterns = [
     path('grading/<int:gradingprocess_id>', views.gradingdetails, name='gradingdetails'),
     path('gradingitem', views.gradingitem, name='gradingitem'),
     path('gradingstart', views.gradingstart, name='gradingstart'),
+    path('gradingitemdetails/<int:gradingprocess_id>/<int:assignmentitem_id>', views.gradingitemdetails, name='gradingitemdetails'),
 
     # api endpoints
     path('api_updategradingstatus', views.update_gradingstatus.as_view(), name='api_updategradingstatus'),
@@ -44,6 +45,7 @@ urlpatterns = [
     path('api_getstudentsubmissions/<int:assignmentitem_id>', views.get_studentsubmissions.as_view(), name='api_getstudentsubmissions'),
     path('api_updatestudentsubmissionitem', views.update_studentsubmissionitem.as_view(), name='api_updatestudentsubmissionitem'),
     path('api_updateenvironmentinstance', views.update_environmentinstance.as_view(), name='api_updateenvironmentinstance'),
+    path('api_updatestudentsubmissionquery', views.update_studentsubmissionquery.as_view(), name='api_updatestudentsubmissionquery'),
 
 
     # bulk import actions

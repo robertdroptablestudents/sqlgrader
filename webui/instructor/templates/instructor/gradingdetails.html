@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load render_table from django_tables2 %}
 
 {% block title %}Grading {{ grading_process.assignment.assignment_name }}{% endblock %}
 {% block tabname %}grading{% endblock %}
@@ -20,19 +21,21 @@
         {% endif %}
     </div>
     <div class="col-md-6">
+        {% if grading_process.process_status == 'Ready' %}
         <form action="{% url 'instructor:gradingstart' %}" method="post">
             <input type="hidden" name="grading_process_id" value="{{ grading_process.id }}">
             {% csrf_token %}
             <div class="form-group">
                 <div class="row">
                     <div class="mb-3 float-end">
-                    <button type="submit" class="btn btn-success" value="Start Grading">
-                        Start Grading <i class="fas fa-hourglass-start"></i>
-                    </button>
-                </div>
+                        <button type="submit" class="btn btn-success" value="Start Grading">
+                            Start Grading <i class="fas fa-hourglass-start"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
         </form>
+        {% endif %}
     </div>
 </div>
 
@@ -44,18 +47,30 @@
 <!-- add items to grade, show items to grade -->
 <div class="row border-top pt-3">
     <div class="col-md-6">
-        <h3>Items to grade</h3>
+        <h4>{{ grading_process.assignment.assignment_name }} Items to Grade</h4>
         {% if grading_assignments %}
-        <ul>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Assignment</th>
+                    <th>Grades</th>
+                </tr>
+            </thead>
+            <tbody>
             {% for assignmentitem in grading_assignments %}
-            <li> {{ assignmentitem.assignment_item.item_number }}.
-                <a href="{% url 'instructor:assignmentitemdetails' assignmentitem.assignment_item.id %}">{{ assignmentitem.assignment_item.item_name }} ({{ assignmentitem.assignment_item.item_type }})</a>
-            </li>
+                <tr>
+                    <td>{{ assignmentitem.assignment_item.item_number }}. {{ assignmentitem.assignment_item.item_name }} ({{ assignmentitem.assignment_item.item_type }})</td>
+                    <td><a href="{% url 'instructor:assignmentitemdetails' assignmentitem.assignment_item.id %}"><i class="fas fa-book" title="Open Assignment Item"></i></a></td>
+                    <td><a href="{% url 'instructor:gradingitemdetails' grading_process.id assignmentitem.assignment_item.id %}"><i class="fas fa-clipboard-check" title="Open Grades"></i></a></td>
+                </tr>
             {% endfor %}
-        </ul>
+            </tbody>
+        </table class="table">
         {% endif %}
     </div>
     <div class="col-md-6">
+        {% if grading_process.process_status == 'Ready' %}
         <form action="{% url 'instructor:gradingitem' %}" method="post">
             <input type="hidden" name="grading_process_id" value="{{ grading_process.id }}">
             {% csrf_token %}
@@ -80,9 +95,18 @@
                 </div>
             </div>
         </form>
+        {% endif %}
     </div>
 </div>
 
+
+<!-- show grades -->
+<div class="row border-top pt-3">
+    <div class="col-md-12">
+        <h4>Grades for {{ grading_process.assignment.assignment_name }}</h4>
+        {% render_table grades_table %}
+    </div>
+</div>
 
 
 {% endblock %}

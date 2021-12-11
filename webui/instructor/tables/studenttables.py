@@ -27,7 +27,6 @@ class StudentTable(tables.Table):
 
 # for all grades for a student on an assignment
 class StudentSubmissionItemGradeTable(tables.Table):
-    # student_submission_item.assignment_item.assignment_name
     assignment_name = tables.Column(accessor='student_submission_item.assignment_item.assignment.assignment_name', verbose_name='Assignment')
     assignment_item = tables.Column(accessor='student_submission_item.assignment_item.item_name', verbose_name='Item')
     environment_instance = tables.Column(accessor='environment_instance.environment_name', verbose_name='Instance')

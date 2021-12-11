@@ -7,7 +7,7 @@ from django.contrib.auth.models import User
 import requests, os
 from rest_framework.authtoken.models import Token
 
-from ..models import Student, StudentGroup, Assignment, AssignmentEnvironment, AssignmentItem, EnvironmentInstance, DBTYPES
+from ..models import Student, StudentGroup, Assignment, AssignmentEnvironment, AssignmentItem, EnvironmentInstance, GradingProcess, DBTYPES
 from .grading import APIURL
 
 # return full assignment list view
@@ -114,6 +114,7 @@ def assignmentdetails(request, assignment_id):
         assignment = Assignment.objects.get(pk=assignment_id)
         assignment_environments = AssignmentEnvironment.objects.filter(assignment=assignment)
         assignment_items = AssignmentItem.objects.filter(assignment=assignment).order_by('item_number')
+        grading_processes = GradingProcess.objects.filter(assignment=assignment)
     except Assignment.DoesNotExist:
         raise Http404("assignment does not exist")
     context = {
@@ -121,6 +122,7 @@ def assignmentdetails(request, assignment_id):
         'assignment_environments': assignment_environments,
         'assignmenttypes': AssignmentItem.ASSIGNMENT_TYPES,
         'assignment_items': assignment_items,
+        'grading_processes': grading_processes,
     }
     return render(request, 'instructor/assignment.html', context)
 

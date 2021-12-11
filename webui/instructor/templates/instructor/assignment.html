@@ -17,12 +17,9 @@
 </div>
 <!-- form for editing assignment info -->
 <div class="row">
-    <div class="col-md-6">
-        Some helpful text here, and a link to docs.
-    </div>
     <div class="col-md-6 pb-3">
         <div class="card"><div class="card-body">
-        <h5 class="card-title">Edit assignment</h5>
+        <h5 class="card-title">Edit Assignment</h5>
         <form action="{% url 'instructor:assignmentedit' %}" method="post">
             {% csrf_token %}
             <div class="form-group">
@@ -49,20 +46,19 @@
                     </button>
                 </div>
             </div>
-            <!-- <div class="form-floating">
-                <textarea class="form-control" id="assignment_description" name="assignment_description" rows="3">{{ assignment.assignment_description }}</textarea>
-                <label for="assignment_description">Assignment Description</label>
-            </div>
-            <div class="form-floating">
-                <label for="assignment_due_date">Due Date</label>
-                <input type="date" class="form-control" id="assignment_due_date" name="assignment_due_date" value="{{ assignment.assignment_due_date }}">
-            </div> 
-            <div class="form-floating">
-                <label for="assignment_points">Points</label>
-                <input type="number" class="form-control" id="assignment_points" name="assignment_points" value="
-                -->
-
         </form>
+        </div></div>
+    </div>
+    <div class="col-md-6">
+        <div class="card"><div class="card-body">
+            <h5 class="card-title">Grading Info</h5>
+            {% if grading_processes %}
+            <ul class="list-group list-group-flush">
+                {% for process in grading_processes %}
+                    <li class="list-group-item"><i class="fas fa-clipboard-check"></i> <a href="/instructor/grading/{{ process.id }}"><strong>{{ process.process_status }}</strong> {{ process.process_start_time }}</a> </li>
+                {% endfor %}
+            </ul>
+            {% endif %}
         </div></div>
     </div>
 </div>
