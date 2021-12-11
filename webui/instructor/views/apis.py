@@ -48,6 +48,39 @@ class update_gradingstatus(APIView):
 
         return HttpResponse(status=200)
 
+# update the student submission based on individual environment grades
+class update_studentsubmissionquery(APIView):
+    permission_classes = (IsAuthenticated, )
+
+    def post(self, request):
+        # api endpoint to update student submission, returns 200
+        # request.data should contain: assignment_item_id
+
+        try:
+            assignment_item = AssignmentItem.objects.get(pk=request.data['assignment_item_id'])
+        except AssignmentItem.DoesNotExist:
+            raise Http404("assignment item does not exist")
+
+        # get all student submissions for this assignment item
+        student_submissions = StudentSubmissionItem.objects.filter(assignment_item=assignment_item)
+        
+        for student_submission in student_submissions:
+            item_grades = StudentSubmissionItemGrade.objects.filter(student_submission_item=student_submission)
+            total_points_possible = 0.0
+            total_points_earned = 0.0
+            for item_grade in item_grades:
+                total_points_possible += item_grade.points_possible
+                total_points_earned += item_grade.points_earned
+            if total_points_possible > 0:
+                student_submission.score_primary = total_points_earned / total_points_possible
+            else:
+                student_submission.score_primary = 0.0
+            student_submission.save()
+
+        return HttpResponse(status=200)
+
+
+# update student submission items - either root item for schema or individual query environments
 class update_studentsubmissionitem(APIView):
     permission_classes = (IsAuthenticated, )
 
@@ -85,6 +118,7 @@ class update_studentsubmissionitem(APIView):
 
         return HttpResponse(status=200)
 
+# mark an environment instance for datagen completion
 class update_environmentinstance(APIView):
     permission_classes = (IsAuthenticated, )
 
@@ -99,8 +133,6 @@ class update_environmentinstance(APIView):
         
         if 'has_datagen' in request.data:
             environment_instance.has_datagen = request.data['has_datagen']
-        # if 'has_datagen' in request.data and request.data['has_datagen'] == "False":
-        #     environment_instance.has_datagen = False
         if 'datagen_status' in request.data and request.data['datagen_status'] != '':
             environment_instance.datagen_status = request.data['datagen_status']
 

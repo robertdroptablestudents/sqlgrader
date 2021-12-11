@@ -81,7 +81,7 @@
         {% if student_submissions %}
         <ul>
             {% for submission in student_submissions %}
-            <li class="list-group-item"><i class="fas fa-book"></i> {{ submission.assignment.assignment_name }}</li>
+            <li class="list-group-item"><i class="fas fa-book"></i> <a href="submission/{{ submission.id }}">{{ submission.assignment.assignment_name }}</a></li>
             {% endfor %}
         </ul>
         {% endif %}

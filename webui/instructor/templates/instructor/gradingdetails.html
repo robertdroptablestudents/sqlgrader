@@ -20,19 +20,21 @@
         {% endif %}
     </div>
     <div class="col-md-6">
+        {% if grading_process.process_status == 'Ready' %}
         <form action="{% url 'instructor:gradingstart' %}" method="post">
             <input type="hidden" name="grading_process_id" value="{{ grading_process.id }}">
             {% csrf_token %}
             <div class="form-group">
                 <div class="row">
                     <div class="mb-3 float-end">
-                    <button type="submit" class="btn btn-success" value="Start Grading">
-                        Start Grading <i class="fas fa-hourglass-start"></i>
-                    </button>
-                </div>
+                        <button type="submit" class="btn btn-success" value="Start Grading">
+                            Start Grading <i class="fas fa-hourglass-start"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
         </form>
+        {% endif %}
     </div>
 </div>
 
@@ -56,6 +58,7 @@
         {% endif %}
     </div>
     <div class="col-md-6">
+        {% if grading_process.process_status == 'Ready' %}
         <form action="{% url 'instructor:gradingitem' %}" method="post">
             <input type="hidden" name="grading_process_id" value="{{ grading_process.id }}">
             {% csrf_token %}
@@ -80,6 +83,7 @@
                 </div>
             </div>
         </form>
+        {% endif %}
     </div>
 </div>
 

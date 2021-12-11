@@ -12,6 +12,12 @@ SECONDARY_PORT = 1438
 # functions calling back to django instance
 APIURL = 'http://localhost:80/instructor/'
 
+# call process to tally all environment instances for a query assignment item
+def callUpdateStudentSubmissionQuery(apikey, assignment_item_id):
+    payload = {'assignment_item_id': assignment_item_id}
+    r = requests.post(APIURL + 'api_updatestudentsubmissionquery', data=json.dumps(payload), headers={'Authorization': 'Token ' + apikey, 'Content-Type': 'application/json'})
+    return r.status_code
+
 # update the student submission with grade and status for an environment instance
 def callUpdateStudentSubmissionItemQuery(apikey, student_submission_item_id, environment_instance_id, points_possible, points_earned, grading_log):
     payload = {'student_submission_item_id': student_submission_item_id, 'environment_instance_id': environment_instance_id, 'points_possible': points_possible, 'points_earned': points_earned, 'grading_log': grading_log}
@@ -57,7 +63,7 @@ def callGetStudentSubmissions(apikey, assignment_item_id):
 
 # format rows_missing [] and extra_rows [] into a string
 def format_query_output(rows_missing, extra_rows, points_possible, points_earned, environment_name):
-    output = 'Test environment: ' + environment_name + ' score ' + str(points_earned) + ' out of ' + str(points_possible) + '\n'
+    output = 'Test environment ' + environment_name + ' earned score ' + str(points_earned) + ' out of ' + str(points_possible) + '\n'
     output += 'Rows missing: ' + '\n'
     if len(rows_missing) > 0:
         for row in rows_missing:
@@ -140,7 +146,9 @@ def runGraderQuery(apikey, grading_process_id, db_type, initial_code_path, item_
 
         # delete the admin container
         controlplane.deleteDB(admin_container.id)
-
+    
+    # call an API to tally the query points for each student
+    callUpdateStudentSubmissionQuery(apikey, assignment_item_id)
 
 # grading process for a schema assignment item
 def runGraderSchema(apikey, grading_process_id, db_type, initial_code_path, item_number, assignment_item_id):
@@ -216,4 +224,4 @@ def rungradingprocess(**kwargs):
             runGraderSchema(apikey, grading_process_id, db_type, initial_code_path, item_number, assignment_item_id)
 
     # update the grading process for completion
-
+    callUpdateGradingLog(apikey, grading_process_id, 'Finished', 'Grading process completed.')
