@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'django_tables2',
+    'report_builder',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -51,6 +52,7 @@ INSTALLED_APPS = [
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
     ],
 }
 
@@ -77,7 +79,9 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'django.template.context_processors.media'
+                'django.template.context_processors.media',
+                # report_builder
+                'django.template.context_processors.static'
             ],
         },
     },
@@ -140,3 +144,8 @@ STATICURL_ROOT = str(BASE_DIR / 'static')
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+
+# report builder
+REPORT_BUILDER_INCLUDE = ['instructor.student', 'instructor.studentgroup', 'instructor.studentsubmission', 'instructor.studentsubmissionitem', 'instructor.studentsubmissionitemgrade', 'instructor.assignment', 'instructor.assignmentenvironment', 'instructor.assignmentitem', 'instructor.environmentinstance', 'instructor.gradingprocess', 'instructor.gradingassignment']

@@ -32,10 +32,11 @@
           </a>
         <nav role="navigation">
           <ul class="nav nav-pills" id="navbar">
-            <li class="nav-item"><a href="/instructor" class="nav-link" tabname="home">Home</a></li>
-            <li class="nav-item"><a href="/instructor/students" class="nav-link" tabname="students">Students</a></li>
-            <li class="nav-item"><a href="/instructor/assignments" class="nav-link" tabname="assignments">Assignments</a></li>
-            <li class="nav-item"><a href="/instructor/grading" class="nav-link" tabname="grading">Grading</a></li>
+            <li class="nav-item"><a href="{% url 'instructor:index' %}" class="nav-link" tabname="home">Home</a></li>
+            <li class="nav-item"><a href="{% url 'instructor:studentlist' %}" class="nav-link" tabname="students">Students</a></li>
+            <li class="nav-item"><a href="{% url 'instructor:assignmentlist' %}" class="nav-link" tabname="assignments">Assignments</a></li>
+            <li class="nav-item"><a href="{% url 'instructor:gradingoverview' %}" class="nav-link" tabname="grading">Grading</a></li>
+            <li class="nav-item"><a href="../reports" class="nav-link" tabname="reports">Report Builder</a></li>
           </ul>
           </nav>
         </header>
