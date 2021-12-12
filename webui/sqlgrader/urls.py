@@ -18,11 +18,14 @@ from django.urls import include, path
 from django.conf import settings
 from django.conf.urls.static import static
 
-from .views import rootRedirect
+from .views import rootRedirect, reportRedirect
 
 urlpatterns = [
     path('instructor/', include('instructor.urls')),
     path('admin/', admin.site.urls),
+    # report builder
+    path('report_builder/', include('report_builder.urls')),
+    path('reports/', reportRedirect),
     # root redirect to instructor
     path('', rootRedirect),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) + static(settings.STATIC_URL, document_root=settings.STATICURL_ROOT)

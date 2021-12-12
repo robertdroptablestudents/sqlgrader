@@ -3,7 +3,7 @@ Django==3.2.9
 httpx
 djangorestframework
 django-tables2
-
+django-report-builder
 
 # flask dev environment, also in api/requirements.txt
 docker
