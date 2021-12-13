@@ -73,6 +73,9 @@
                 $(this).addClass('active');
                 $(this).attr('aria-current','true');
             }
+            if ( $(this).attr('tabname') == "reports" ) {
+                $(this).attr('href', window.location.host+'/reports');
+            }
         }); 
     });
 </script>
