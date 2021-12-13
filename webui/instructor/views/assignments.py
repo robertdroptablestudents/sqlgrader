@@ -179,12 +179,19 @@ def datagenstart(request):
     db_type = assignment_environment.db_type
     env_code = assignment_environment.initial_code.name
 
+    query_text = ''
+    # if assignment_item.item_type.lower() == 'query' and assignment_item.item_solution:
+    #     # read query from file
+    #     query_text = assignment_item.item_solution.read()
+    #     print(query_text)
+
     postbody = {
         'db_type': db_type,
         'assignment_item_id': assignment_item_id,
         'env_code': env_code,
         'initial_code': initial_code,
         'row_count': row_count,
+        'query_text': query_text,
     }
 
     # get token to pass to API

@@ -111,6 +111,144 @@ def fakerData(column_type, isUnique, data_size):
         return ''
 
 
+# faker special column name executor
+def fakerSpecialData(column_type, isUnique, data_size):
+    # start with the non-string options
+    match column_type:
+        case 'latitude':
+            return faker.latitude()
+        case 'longitude':
+            return faker.longitude()
+    
+    # string options
+    if data_size == '-1': # resize (max) columns
+        data_size = 500
+    elif data_size == ',': # resize flex columns
+        data_size = 50
+    else:
+        data_size = int(data_size)-1
+
+    match column_type:
+        case 'city':
+            if isUnique == 'YES':
+                return faker.unique.city()[:data_size]
+            else:
+                return faker.city()[:data_size]
+        case 'country':
+            if int(data_size) < 5:
+                if isUnique == 'YES':
+                    return faker.unique.country_code()[:data_size]
+                else:
+                    return faker.country_code()[:data_size]
+            else:
+                if isUnique == 'YES':
+                    return faker.unique.country()[:data_size]
+                else:
+                    return faker.country()[:data_size]
+        case 'zip':
+            if isUnique == 'YES':
+                return faker.unique.postcode()[:data_size]
+            else:
+                return faker.postcode()[:data_size]
+        case 'address':
+            if isUnique == 'YES':
+                return faker.unique.street_address()[:data_size]
+            else:
+                return faker.street_address()[:data_size]
+        case 'phone':
+            if isUnique == 'YES':
+                return faker.unique.phone_number()[:data_size]
+            else:
+                return faker.phone_number()[:data_size]
+        case 'company':
+            if isUnique == 'YES':
+                return faker.unique.company()[:data_size]
+            else:
+                return faker.company()[:data_size]
+        case 'color':
+            if isUnique == 'YES':
+                return faker.unique.color_name()[:data_size]
+            else:
+                return faker.color_name()[:data_size]
+        case 'email':
+            if isUnique == 'YES':
+                return faker.unique.email()[:data_size]
+            else:
+                return faker.email()[:data_size]
+        case 'url':
+            if isUnique == 'YES':
+                return faker.unique.url()[:data_size]
+            else:
+                return faker.url()[:data_size]
+        case 'first_name':
+            if isUnique == 'YES':
+                return faker.unique.first_name()[:data_size]
+            else:
+                return faker.first_name()[:data_size]
+        case 'last_name':
+            if isUnique == 'YES':
+                return faker.unique.last_name()[:data_size]
+            else:
+                return faker.last_name()[:data_size]
+        case 'account':
+            if isUnique == 'YES':
+                return faker.unique.bban()[:data_size]
+            else:
+                return faker.bban()[:data_size]
+    
+    # no types have matched, return empty string
+    return ''
+
+
+# faker special column name selector
+def fakerSpecialDataType(column_name, orig_column_type):
+    new_column_type = ''
+
+    # types only strings
+    if orig_column_type in ('string', 'nvarchar', 'varchar', 'text', 'char', 'nchar','char varying', 'nchar varying', 'character varying', 'character'):
+        # city, country, zip, postal, address, company, phone
+        if 'city' in column_name:
+            new_column_type = 'city'
+        if 'country' in column_name:
+            new_column_type = 'country'
+        if 'zip' in column_name or 'postal' in column_name:
+            new_column_type = 'postcode'
+        if 'address' in column_name:
+            new_column_type = 'address'
+        if 'phone' in column_name:
+            new_column_type = 'phone_number'
+        if 'company' in column_name:
+            new_column_type = 'company'
+
+        # color (color_name)
+        if 'color' in column_name:
+            new_column_type = 'color_name'
+        # email, url
+        if 'email' in column_name:
+            new_column_type = 'email'
+        if 'url' in column_name or 'website' in column_name:
+            new_column_type = 'url'
+
+        # first name, last name
+        if 'first_name' in column_name:
+            new_column_type = 'first_name'
+        if 'last_name' in column_name:
+            new_column_type = 'last_name'
+
+        # account (bank account)
+        if 'account' in column_name:
+            new_column_type = 'bank_account'
+    
+    # not necessarily strings
+    # latitude, longitude
+    if 'latitude' in column_name:
+        new_column_type = 'latitude'
+    if 'longitude' in column_name:
+        new_column_type = 'longitude'
+
+    return new_column_type
+
+
 # generate data values for this table based on existing values in foreign keys
 def pullSeedValues(assignment_env_id, source_table, source_column):
     storage_path = dataStoragePath(assignment_env_id)
@@ -161,8 +299,6 @@ def basicDataGen(assignment_env_id, row_count, tableName, all_columns, file_numb
         if row[8] == 'YES':
             # set flag to generate IDs and allow identity insert
             table_has_id = True
-    #print('the columns are')
-    #print(table_columns)
 
     # pick out which columns are foreign keys
     foreign_key_columns = []
@@ -183,7 +319,14 @@ def basicDataGen(assignment_env_id, row_count, tableName, all_columns, file_numb
                 # start the self referencing column with its first value
                 foreign_key_seeds[fk[2]] = [ foreign_key_seeds[fk[5]][0] ] + foreign_key_seeds[fk[5]]
 
-    #print('about to open files')
+    # check column names for special data shapes (eg address, color)
+    special_columns = {}
+    for column in table_columns:
+        if column[3] not in foreign_key_columns and column[3] not in self_referencing_columns and column[8] != 'YES':
+            new_column_type = fakerSpecialDataType(column[3], column[6].lower())
+            if new_column_type != '':
+                special_columns[column[3]] = new_column_type
+
     # open a new csv file filenumber-schema-tablename.csv
     csv_file_name = str(file_number)+'-'+tableName+'.csv'
     sql_file_name = str(file_number)+'-'+tableName+'.sql'
@@ -225,12 +368,14 @@ def basicDataGen(assignment_env_id, row_count, tableName, all_columns, file_numb
             # column is an ID
             elif column[8] == 'YES':
                 new_data = i
+            # column is a special data type, retrieve for special faker data function
+            elif column[3] in special_columns:
+                new_data = fakerSpecialData(special_columns[column[3]], column[9], column[7])
             # not linked to another column, generate data
             else:
                 new_data = fakerData(column[6].lower(), column[9], column[7])
             row.append(str(new_data))
             
-            # check for guids, identifiers
 
         insert_statement = '\'' + '\', \''.join(row) + '\''
 
@@ -317,6 +462,11 @@ def startdatagen(**kwargs):
         env_code_path = post_body['env_code']
         initial_code_path = post_body['initial_code']
         row_count = int(post_body['row_count'])
+
+        # to generate seed values
+        if post_body['query_text']:
+            query_text = post_body['query_text']
+        seed_array = []
 
         if not dbUtilities.checkDbCompat(db_type):
             #print("Database type not supported")
