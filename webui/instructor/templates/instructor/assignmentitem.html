@@ -185,7 +185,7 @@
                         {% else %}
                             <i class="fas fa-file-alt"></i>
                         {% endif %}
-                         <a href="{{ MEDIA_URL }}{{ file }}">{{ file }}</a></li>
+                        <a href="{{ MEDIA_URL }}itemenv_{{ env_instance.id }}/datagen/{{ file }}">{{ file }}</a></li>
                     {% endfor %}
                 </ul>
                 {% endif %}
